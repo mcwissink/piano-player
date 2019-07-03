@@ -1,10 +1,12 @@
 import React from 'react';
+import Piano from './components/Piano'
 import logo from './logo.svg';
 import './App.css';
 
 const App: React.FC = () => {
   return (
     <div className="App">
+      <Piano />
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
         <p>
