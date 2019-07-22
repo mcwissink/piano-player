@@ -1,4 +1,5 @@
 import * as WebMidi from "webmidi";
+import MidiPlayer from "./MidiPlayer";
 
 type DeviceCallback = (devices: WebMidi.Input[]) => void;
 export default class MidiController {
@@ -21,7 +22,7 @@ export default class MidiController {
 	  });
   }
 
-  connect(name: string) {
+  connect(name: string, player: MidiPlayer) {
     this.remove();
     const device = name === "" ? false : this.midi.getInputByName(name);
     if (device) {
@@ -30,9 +31,11 @@ export default class MidiController {
         console.log(e);
       });
       this.input.addListener("noteon", "all", e => {
+        player.noteOn(e);
         console.log(e);
       });
       this.input.addListener("noteoff", "all", e => {
+        player.noteOff(e);
         console.log(e);
       })
     } else {
