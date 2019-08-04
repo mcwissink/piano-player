@@ -1,6 +1,5 @@
 import React from "react";
 import MidiController from "./MidiController"
-import MidiPlayer from "./MidiPlayer"
 import * as WebMidi from "webmidi";
 
 interface IPianoProps {

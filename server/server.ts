@@ -14,6 +14,9 @@ io.on('connection', socket => {
   socket.on('noteon', e => {
     socket.to('default').broadcast.emit('noteon', e);
   });
+  socket.on('noteoff', e => {
+    socket.to('default').broadcast.emit('noteoff', e);
+  });
 })
 
 

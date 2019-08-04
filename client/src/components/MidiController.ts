@@ -55,28 +55,23 @@ export default class MidiController {
       this.input.addListener("programchange", "all", e => {
         console.log(e);
       });
-      this.input.addListener("noteon", "all", e => {
-        this.player.noteon(e);
-        this.sendNoteon(e);
-        console.log(e);
-      });
-      this.input.addListener("noteoff", "all", e => {
-        this.player.noteoff(e);
-        console.log(e);
-      })
+      this.input.addListener("noteon", "all", this.noteon);
+      this.input.addListener("noteoff", "all", this.noteoff)
     } else {
       this.input = null;
     }
   }
 
-  sendNoteon = (event: WebMidi.InputEventNoteon) => {
+  noteon = (event: WebMidi.InputEventNoteon) => {
+    this.player.noteon(event);
     this.socket.emit('noteon', {
       id: this.socket.id,
       event,
     });
   }
 
-  sendNoteoff = (event: WebMidi.InputEventNoteoff) => {
+  noteoff = (event: WebMidi.InputEventNoteoff) => {
+    this.player.noteoff(event);
     this.socket.emit('noteoff', {
       id: this.socket.id,
       event,
