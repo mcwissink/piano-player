@@ -15,14 +15,35 @@ interface IPianoState {
 export default class Piano extends React.PureComponent<IPianoProps, IPianoState> {
   midi: MidiController;
   player: MidiPlayer;
+  canvas?: HTMLCanvasElement;
+  ctx?: CanvasRenderingContext2D | null
+  frameId: number;
   constructor(props: IPianoProps) {
     super(props);
     this.midi = new MidiController(this.handleDeviceUpdate);
     this.player = new MidiPlayer();
+    this.frameId = -1;
     this.state = {
       device: "",
       devices: [],
     };
+  }
+
+  setup = (canvas: HTMLCanvasElement | null) => {
+    if (canvas === null) {
+      return;
+    }
+    this.canvas = canvas;
+    this.ctx = this.canvas.getContext("2d");
+    this.update();
+  }
+
+  update = () => {
+    this.frameId = window.requestAnimationFrame(this.update);
+  }
+
+  componentWillUnmount() {
+    window.cancelAnimationFrame(this.frameId);
   }
 
   handleDeviceUpdate = (devices: WebMidi.Input[]) => {
@@ -42,6 +63,7 @@ export default class Piano extends React.PureComponent<IPianoProps, IPianoState>
     } = this.state;
     return (
       <div>
+        <canvas ref={this.setup} />
         <select value={device} onChange={this.handleDeviceSelect}>
           <option value=""></option>
           {devices.map(device => <option key={device} value={device}>{device}</option>)}
