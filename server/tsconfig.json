@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+  	"emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "esModuleInterop": true,
+  	"lib": ["es2017"],
+    "module": "commonjs",
+    "moduleResolution": "node",
+  	"noUnusedLocals": true,
+  	"strict": true,
+    "strictFunctionTypes": false,
+  	"target": "ES2017"
+  }
+}

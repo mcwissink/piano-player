@@ -14,14 +14,12 @@ interface IPianoState {
 
 export default class Piano extends React.PureComponent<IPianoProps, IPianoState> {
   midi: MidiController;
-  player: MidiPlayer;
   canvas?: HTMLCanvasElement;
   ctx?: CanvasRenderingContext2D | null
   frameId: number;
   constructor(props: IPianoProps) {
     super(props);
     this.midi = new MidiController(this.handleDeviceUpdate);
-    this.player = new MidiPlayer();
     this.frameId = -1;
     this.state = {
       device: "",
@@ -51,8 +49,8 @@ export default class Piano extends React.PureComponent<IPianoProps, IPianoState>
   }
 
   handleDeviceSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const device = e.target.value;
-    this.midi.connect(device, this.player);
+    const device = e.target.value; 
+    this.midi.connect(device);
     this.setState({ device });
   }
 

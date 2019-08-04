@@ -14,7 +14,7 @@ export default class MidiPlayer {
     });
   }
 
-  noteOn(event: WebMidi.InputEventNoteon) {
+  noteon(event: WebMidi.InputEventNoteon) {
     if (this.soundfont !== null) {
       const note = this.activeNotes[event.note.name];
       if (note !== undefined) {
@@ -24,7 +24,7 @@ export default class MidiPlayer {
     }
   }
 
-  noteOff(event: WebMidi.InputEventNoteoff) {
+  noteoff(event: WebMidi.InputEventNoteoff) {
     if (this.soundfont !== null) {
       const note = this.activeNotes[event.note.name];
       if (note !== undefined) {
