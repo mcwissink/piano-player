@@ -1,22 +1,46 @@
 import React from 'react';
 import Piano from './components/Piano'
-import logo from './logo.svg';
+import io from 'socket.io-client';
 import './App.css';
 
+export interface IAppContext {
+  socket: SocketIOClient.Socket; 
+}
+
+export const AppContext = React.createContext<Partial<IAppContext>>({});
+
 class App extends React.PureComponent<{}, {}> {
+  socket: SocketIOClient.Socket;
+  constructor(props: {}) {
+    super(props);
+    this.socket = io.connect(window.location.href.replace(/^http/, "ws"));
+    this.socket.on('connect_error', () => console.log("error"));
+    this.socket.on('connect', () => console.log("connected"));
+    this.socket.emit('join', { room: 'default' });
+  };
+  
   render() {
     return (
-      <div className="App">
+      <AppContext.Provider value={{
+        socket: this.socket,
+      }}>
         <Piano />
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.tsx</code> and save to reload.
-          </p>
-        </header>
-      </div>
+      </AppContext.Provider>
     );
   }
 }
+
+export const withContext = <P extends object>(WrappedComponent: React.ComponentType<P & IAppContext>) =>
+  class ContextComponent extends React.Component<P> {
+    static contextType = AppContext;
+    context!: React.ContextType<typeof AppContext>;
+    render() {
+      if (this.context.socket !== undefined) {
+        return <WrappedComponent socket={this.context.socket} {...this.props}/>;
+      } else {
+        return null;
+      }
+    }
+  }
 
 export default App;

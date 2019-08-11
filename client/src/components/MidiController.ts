@@ -1,38 +1,35 @@
 import * as WebMidi from "webmidi";
-import io from 'socket.io-client';
 import MidiPlayer from "./MidiPlayer";
+import io from 'socket.io-client';
 
-
-interface ServerNoteon {
+export interface ServerNoteon {
   id: string;
   event: WebMidi.InputEventNoteon;
 }
 
-interface ServerNoteoff {
+export interface ServerNoteoff {
   id: string;
   event: WebMidi.InputEventNoteoff;
 }
 
+export type ActiveNotes = {[note: number]: ServerNoteon[]};
 
 type DeviceCallback = (devices: WebMidi.Input[]) => void;
 export default class MidiController {
   midi: WebMidi.WebMidi;
   player: MidiPlayer;
   input: WebMidi.Input | null;
-  socket: SocketIOClient.Socket;
-  constructor(deviceCallback: DeviceCallback) {
+  socket: SocketIOClient.Socket
+  activeNotes: ActiveNotes;
+  constructor(socket: SocketIOClient.Socket, deviceCallback: DeviceCallback) {
     this.midi = WebMidi.default;
     this.player = new MidiPlayer();
     this.input = null;
-    
+    this.socket = socket;
+    this.activeNotes = {};
 
-    this.socket = io.connect(window.location.href.replace(/^http/, "ws"));
-    this.socket.on('connect_error', () => console.log("error"));
-    this.socket.on('connect', () => console.log("connected"));
-    this.socket.emit('join', { room: 'default' });
     this.socket.on('noteon', this.serverNoteon);
     this.socket.on('noteoff', this.serverNoteoff);
-    
     this.init(deviceCallback);
   }
 
@@ -63,11 +60,13 @@ export default class MidiController {
   }
 
   noteon = (event: WebMidi.InputEventNoteon) => {
-    this.player.noteon(event);
-    this.socket.emit('noteon', {
+    const serverNoteon = {
       id: this.socket.id,
       event,
-    });
+    };
+    this.player.noteon(event);
+    this.activeNotes[event.note.number].push(serverNoteon);
+    this.socket.emit('noteon', serverNoteon);
   }
 
   noteoff = (event: WebMidi.InputEventNoteoff) => {
@@ -96,5 +95,3 @@ export default class MidiController {
     }
   }
 }	
-
-	
