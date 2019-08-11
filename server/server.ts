@@ -6,7 +6,6 @@ const server = new http.Server(app);
 const io = socket(server);
 
 io.on('connection', socket => {
-  console.log(socket);
   socket.on('join', e => {
     console.log(`joining room: ${e.room}`);
     socket.join(e.room);
@@ -16,6 +15,11 @@ io.on('connection', socket => {
   });
   socket.on('noteoff', e => {
     socket.to('default').broadcast.emit('noteoff', e);
+  });
+  socket.on('chat', e => {
+    socket.emit('chat', e);
+    console.log('sending chat', e);
+    socket.to('default').broadcast.emit('chat', e);
   });
 })
 

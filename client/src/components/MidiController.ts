@@ -1,25 +1,24 @@
 import * as WebMidi from "webmidi";
 import MidiPlayer from "./MidiPlayer";
-import io from 'socket.io-client';
 
-export interface ServerNoteon {
+export interface INoteonEvent {
   id: string;
   event: WebMidi.InputEventNoteon;
 }
 
-export interface ServerNoteoff {
+export interface INoteoffEvent {
   id: string;
   event: WebMidi.InputEventNoteoff;
 }
 
-export type ActiveNotes = {[note: number]: ServerNoteon[]};
+export type ActiveNotes = {[note: number]: INoteonEvent[]};
 
 type DeviceCallback = (devices: WebMidi.Input[]) => void;
 export default class MidiController {
   midi: WebMidi.WebMidi;
   player: MidiPlayer;
   input: WebMidi.Input | null;
-  socket: SocketIOClient.Socket
+  socket: SocketIOClient.Socket;
   activeNotes: ActiveNotes;
   constructor(socket: SocketIOClient.Socket, deviceCallback: DeviceCallback) {
     this.midi = WebMidi.default;
@@ -28,8 +27,8 @@ export default class MidiController {
     this.socket = socket;
     this.activeNotes = {};
 
-    this.socket.on('noteon', this.serverNoteon);
-    this.socket.on('noteoff', this.serverNoteoff);
+    this.socket.on('noteon', this.noteonEventHandler);
+    this.socket.on('noteoff', this.noteoffEventHandler);
     this.init(deviceCallback);
   }
 
@@ -77,13 +76,13 @@ export default class MidiController {
     });
   }
 
-  serverNoteon = (data: ServerNoteon) => {
+  noteonEventHandler = (data: INoteonEvent) => {
     if (data.id !== this.socket.id) {
       this.player.noteon(data.event);
     }
   }
 
-  serverNoteoff = (data: ServerNoteoff) => {
+  noteoffEventHandler = (data: INoteoffEvent) => {
     if (data.id !== this.socket.id) {
       this.player.noteoff(data.event);
     }
