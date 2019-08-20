@@ -20,9 +20,16 @@ class Chat extends React.PureComponent<IProps, IChatState> {
     };
   }
 
-  onMessageSubmit = () => {
+  onMessageSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const {
+      message,
+    } = this.state;
+    if (message === '') {
+      return;
+    } 
     this.socket.emit('chat', {
-      message: this.state.message,
+      message
     });
     this.setState({ message: '' });
   };
@@ -34,14 +41,19 @@ class Chat extends React.PureComponent<IProps, IChatState> {
 
   render() {
     const {
+      message,
+    } = this.state;
+    const {
       chat,
     } = this.props;
     return (
       <div>
         <span>Chat</span>
         {chat.map((c, i) => <div key={i}>{c.name}: {c.message}</div>)}
-        <input type="text" value={this.state.message} onChange={this.onMessageChange} />
-        <button onClick={this.onMessageSubmit}>Send</button>
+        <form onSubmit={this.onMessageSubmit}>
+          <input type="text" value={message} onChange={this.onMessageChange} />
+          <input type="submit" value="Send" />
+        </form>
       </div>
     )
   }

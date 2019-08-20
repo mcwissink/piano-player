@@ -3,6 +3,7 @@ import MidiPlayer from "./MidiPlayer";
 
 export interface INoteonEvent {
   id: string;
+  color: string;
   event: WebMidi.InputEventNoteon;
 }
 
@@ -11,7 +12,7 @@ export interface INoteoffEvent {
   event: WebMidi.InputEventNoteoff;
 }
 
-export type ActiveNotes = {[note: number]: INoteonEvent[]};
+export type ActiveNotes = {[note: number]: INoteonEvent[]}; 
 
 type DeviceCallback = (devices: WebMidi.Input[]) => void;
 export default class MidiController {
@@ -20,15 +21,20 @@ export default class MidiController {
   input: WebMidi.Input | null;
   socket: SocketIOClient.Socket;
   activeNotes: ActiveNotes;
-  constructor(socket: SocketIOClient.Socket, deviceCallback: DeviceCallback) {
+  userColor: string;
+  constructor(socket: SocketIOClient.Socket, userColor: string, deviceCallback: DeviceCallback) {
     this.midi = WebMidi.default;
     this.player = new MidiPlayer();
     this.input = null;
     this.socket = socket;
-    this.activeNotes = {};
+    this.userColor = userColor;
+    this.activeNotes = [];
+    for (let i = 0; i < 127; i++) {
+      this.activeNotes[i] = [];
+    }
 
-    this.socket.on('noteon', this.noteonEventHandler);
-    this.socket.on('noteoff', this.noteoffEventHandler);
+    this.socket.on('noteon', this.noteonEvent);
+    this.socket.on('noteoff', this.noteoffEvent);
     this.init(deviceCallback);
   }
 
@@ -41,6 +47,10 @@ export default class MidiController {
         this.midi.addListener("disconnected", () => deviceCallback(this.midi.inputs));
       }
 	  });
+  }
+
+  setUserColor(color: string) {
+    this.userColor = color;
   }
 
   connect(name: string) {
@@ -61,6 +71,7 @@ export default class MidiController {
   noteon = (event: WebMidi.InputEventNoteon) => {
     const serverNoteon = {
       id: this.socket.id,
+      color: this.userColor,
       event,
     };
     this.player.noteon(event);
@@ -69,22 +80,26 @@ export default class MidiController {
   }
 
   noteoff = (event: WebMidi.InputEventNoteoff) => {
-    this.player.noteoff(event);
-    this.socket.emit('noteoff', {
+    const serverNoteoff = {
       id: this.socket.id,
       event,
-    });
+    }
+    this.player.noteoff(event);
+    this.activeNotes[event.note.number].pop();
+    this.socket.emit('noteoff', serverNoteoff);
   }
 
-  noteonEventHandler = (data: INoteonEvent) => {
+  noteonEvent = (data: INoteonEvent) => {
     if (data.id !== this.socket.id) {
       this.player.noteon(data.event);
+      this.activeNotes[data.event.note.number].push(data);
     }
   }
 
-  noteoffEventHandler = (data: INoteoffEvent) => {
+  noteoffEvent = (data: INoteoffEvent) => {
     if (data.id !== this.socket.id) {
       this.player.noteoff(data.event);
+      this.activeNotes[data.event.note.number].pop();
     }
   }
   

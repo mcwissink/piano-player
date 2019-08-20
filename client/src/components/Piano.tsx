@@ -1,11 +1,8 @@
 import React from "react";
-import MidiController, {ActiveNotes} from "./MidiController"
+import MidiController, {ActiveNotes, INoteonEvent} from "./MidiController"
 import * as WebMidi from "webmidi";
 import { IAppContext, withContext } from '../App';
 
-const KEY_WIDTH = 10;
-const KEY_HEIGHT = 150;
-const BLACK_KEYS = [0, 2, 5, 7, 10];
 
 class DrawNote {
   canvas: HTMLCanvasElement;
@@ -44,11 +41,15 @@ const gradientWidth = canvas.width;
     ctx.fillRect(0, 0, gradientWidth, gradientHeight);*/
 
 class DrawPiano {
+  BLACK_KEYS = [1, 4, 6, 9, 11];
+  WHITE_KEYS = [0, 2, 3, 5, 7, 8, 10];
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
   activeDrawNotes: {[note: number]: DrawNote};
   pastDrawNotes: DrawNote[];
   topOfPiano: number;
+  keyWidth: number;
+  keyHeight: number;
   constructor(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) {
     this.canvas = canvas;
     this.ctx = ctx;
@@ -57,8 +58,10 @@ class DrawPiano {
     this.activeDrawNotes = {};
     // pastDrawNotes updates the notes that have been released. Scrolling them into the distance
     this.pastDrawNotes = [];
+    this.keyWidth = this.canvas.width / 52;
+    this.keyHeight = this.keyWidth * 10; 
     // Set top of keyboard with some padding
-    this.topOfPiano = canvas.height - KEY_HEIGHT - 1;
+    this.topOfPiano = this.canvas.height - this.keyHeight;
   }
 
   draw(activeNotes: ActiveNotes) {
@@ -84,39 +87,42 @@ class DrawPiano {
   drawPiano(activeNotes: ActiveNotes) {
     // Draw the white keys first
     let whiteNotePosition = 0;
-    for (let i = 1; i <= 88; i++) {
-      const note = activeNotes[i + 20];
-      const x = whiteNotePosition * KEY_WIDTH;
-      this.drawWhiteKey(x, this.topOfPiano, note);
-      whiteNotePosition++;
-      // Handle drawing the notes
-      if (note !== undefined) {
-        if (this.activeDrawNotes[i] === undefined) {
-          this.activeDrawNotes[i] = new DrawNote(this.canvas, this.ctx, x, this.topOfPiano, KEY_WIDTH, 1, "red");
+    for (let i = 0; i < 88; i++) {
+      const note = activeNotes[i + 21][0];
+      const keyInOctave = i % 12;
+      if (this.WHITE_KEYS.indexOf(keyInOctave) !== -1) {
+        const x = whiteNotePosition * this.keyWidth;
+        this.drawWhiteKey(x, this.topOfPiano, note);
+        whiteNotePosition++;
+        // Handle drawing the notes
+        if (note !== undefined) {
+          if (this.activeDrawNotes[i] === undefined) {
+            this.activeDrawNotes[i] = new DrawNote(this.canvas, this.ctx, x, this.topOfPiano, this.keyWidth, 1, note.color);
+          } else {
+            this.activeDrawNotes[i].height++;
+          }
         } else {
-          this.activeDrawNotes[i].height++;
-        }
-      } else {
-        if (this.activeDrawNotes[i] !== undefined) {
-          this.pastDrawNotes.push(this.activeDrawNotes[i]);
-          delete this.activeDrawNotes[i];
+          if (this.activeDrawNotes[i] !== undefined) {
+            this.pastDrawNotes.push(this.activeDrawNotes[i]);
+            delete this.activeDrawNotes[i];
+          }
         }
       }
     }
     // Draw the black keys next
     let blackNotePosition = 0;
-    for (let i = 1; i <= 88; i++) {
-      const note = activeNotes[i + 20];
+    for (let i = 0; i < 88; i++) {
+      const note = activeNotes[i + 21][0];
       const keyInOctave = i % 12;
-      if (BLACK_KEYS.indexOf(keyInOctave) !== -1) {
-        const x = (blackNotePosition * KEY_WIDTH) + (KEY_WIDTH/2)
+      if (this.BLACK_KEYS.indexOf(keyInOctave) !== -1) {
+        const x = (blackNotePosition * this.keyWidth) + (this.keyWidth/2)
         this.drawBlackKey(x, this.topOfPiano, note);
-        blackNotePosition += (keyInOctave === 2 || keyInOctave === 7) ? 2 : 1;
+        blackNotePosition += (keyInOctave === this.BLACK_KEYS[0] || keyInOctave === this.BLACK_KEYS[2]) ? 2 : 1;
         // Handle drawing the notes
         if (note !== undefined) {
           if (this.activeDrawNotes[i] === undefined) {
             // No active note so create one
-            this.activeDrawNotes[i] = new DrawNote(this.canvas, this.ctx,  x, this.topOfPiano, KEY_WIDTH * 0.8, 1, "red");
+            this.activeDrawNotes[i] = new DrawNote(this.canvas, this.ctx, x, this.topOfPiano, this.keyWidth * 0.8, 1, note.color);
           } else {
             // update the active note
             this.activeDrawNotes[i].height++;
@@ -132,18 +138,18 @@ class DrawPiano {
     }
   }
 
-  drawBlackKey(x: number, y: number, note: any) {
-    //const fillColor = note !== undefined ? note.color : "#000000";
-    this.ctx.fillStyle = "#000000";
-    this.ctx.fillRect(x, y, KEY_WIDTH * 0.8, KEY_HEIGHT * 0.65);
+  drawBlackKey(x: number, y: number, note: INoteonEvent) {
+    const fillColor = note !== undefined ? note.color : "#000000";
+    this.ctx.fillStyle = fillColor; 
+    this.ctx.fillRect(x, y, this.keyWidth * 0.8, this.keyHeight * 0.65);
   }
 
-  drawWhiteKey(x: number, y: number, note: any) {
-    //const fillColor = note !== undefined ? note.color : "#ffffff";
-    this.ctx.fillStyle = "#ffffff";
+  drawWhiteKey(x: number, y: number, note: INoteonEvent) {
+    const fillColor = note !== undefined ? note.color : "#ffffff";
+    this.ctx.fillStyle = fillColor;
     this.ctx.strokeStyle = "#000000";
-    this.ctx.fillRect(x, y, KEY_WIDTH, KEY_HEIGHT);
-    this.ctx.strokeRect(x, y, KEY_WIDTH, KEY_HEIGHT);
+    this.ctx.fillRect(x, y, this.keyWidth, this.keyHeight);
+    this.ctx.strokeRect(x, y, this.keyWidth, this.keyHeight);
   }
 }
 
@@ -163,12 +169,16 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
   graphics?: DrawPiano;
   constructor(props: IProps) {
     super(props);
-    this.midi = new MidiController(this.props.socket, this.handleDeviceUpdate);
+    this.midi = new MidiController(this.props.socket, this.props.color, this.handleDeviceUpdate);
     this.frameId = -1;
     this.state = {
       device: "",
       devices: [],
     };
+  }
+
+  componentDidUpdate() {
+    this.midi.setUserColor(this.props.color);
   }
 
   setup = (canvas: HTMLCanvasElement | null) => {
