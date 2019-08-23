@@ -1,15 +1,16 @@
 import Soundfont from "soundfont-player"
 import * as WebMidi from "webmidi";
+import { Player } from "../../@types/soundfont-player";
 
 export default class MidiPlayer {
   soundfont: Soundfont.Player | null;
-  context: AudioContext;
+  context = AudioContext;
   activeNotes: {[note: string]: Soundfont.Player | undefined};
   constructor() {
     this.soundfont = null;
-    this.context = new AudioContext();
     this.activeNotes = {};
-    Soundfont.instrument(this.context, 'acoustic_grand_piano').then(player => {
+    this.context = this.context;
+    Soundfont.instrument(this.context, 'acoustic_grand_piano').then((player: any) => {
       this.soundfont = player;
     });
   }
@@ -20,7 +21,7 @@ export default class MidiPlayer {
       if (note !== undefined) {
         note.stop();
       }
-      this.activeNotes[event.note.name] = this.soundfont.play(event.note.number);
+      this.activeNotes[event.note.name] = this.soundfont.play(event.note.number.toString());
     }
   }
 
