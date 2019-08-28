@@ -1,7 +1,7 @@
 import React from "react";
 import MidiController, {ActiveNotes, INoteonEvent} from "./MidiController"
 import * as WebMidi from "webmidi";
-import { IAppContext, withContext } from '../App';
+import { ITheme, IAppContext, withContext } from '../App';
 
 
 class DrawNote {
@@ -50,7 +50,8 @@ class DrawPiano {
   topOfPiano: number;
   keyWidth: number;
   keyHeight: number;
-  constructor(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) {
+  theme: ITheme;
+  constructor(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, theme: ITheme) {
     this.canvas = canvas;
     this.ctx = ctx;
 
@@ -62,6 +63,11 @@ class DrawPiano {
     this.keyHeight = this.keyWidth * 10; 
     // Set top of keyboard with some padding
     this.topOfPiano = this.canvas.height - this.keyHeight;
+    this.theme = theme;
+  }
+
+  setTheme(theme: ITheme) {
+    this.theme = theme;
   }
 
   draw(activeNotes: ActiveNotes) {
@@ -139,15 +145,17 @@ class DrawPiano {
   }
 
   drawBlackKey(x: number, y: number, note: INoteonEvent) {
-    const fillColor = note !== undefined ? note.color : "#000000";
+    const fillColor = note !== undefined ? note.color : this.theme.secondary;
     this.ctx.fillStyle = fillColor; 
+    this.ctx.strokeStyle = this.theme.primary;
     this.ctx.fillRect(x, y, this.keyWidth * 0.8, this.keyHeight * 0.65);
+    this.ctx.strokeRect(x, y, this.keyWidth * 0.8, this.keyHeight * 0.65);
   }
 
   drawWhiteKey(x: number, y: number, note: INoteonEvent) {
-    const fillColor = note !== undefined ? note.color : "#ffffff";
+    const fillColor = note !== undefined ? note.color : this.theme.primary;
     this.ctx.fillStyle = fillColor;
-    this.ctx.strokeStyle = "#000000";
+    this.ctx.strokeStyle = this.theme.secondary;
     this.ctx.fillRect(x, y, this.keyWidth, this.keyHeight);
     this.ctx.strokeRect(x, y, this.keyWidth, this.keyHeight);
   }
@@ -179,6 +187,9 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
 
   componentDidUpdate() {
     this.midi.setUserColor(this.props.color);
+    if (this.graphics !== undefined) {
+      this.graphics.setTheme(this.props.theme);
+    }
   }
 
   setup = (canvas: HTMLCanvasElement | null) => {
@@ -189,7 +200,7 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
     if (ctx === null) {
       return;
     }
-    this.graphics = new DrawPiano(canvas, ctx);
+    this.graphics = new DrawPiano(canvas, ctx, this.props.theme);
     this.update();
   }
 

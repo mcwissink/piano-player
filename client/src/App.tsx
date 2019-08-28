@@ -1,31 +1,55 @@
 import React from 'react';
 import io from 'socket.io-client';
 import update from 'immutability-helper';
+import { Switch, Route, RouteComponentProps } from 'react-router-dom';
 import './App.css';
 
-import Piano from './components/Piano';
-import Chat from './components/Chat';
 import RoomList from './components/RoomList';
 import Settings from './components/Settings';
+import Room from './components/Room';
+
+export interface IChat {
+  user: IUser;
+  message: string;
+}
+
 
 export interface IRoom {
   id: string;
   name: string;
   likes: number;
+  users: number;
   owner: string;
 }
 
-interface IChat {
+export interface IUser {
   id: string;
   name: string;
-  message: string;
+  color: string;
+}
+
+export interface ITheme {
+  primary: string;
+  secondary: string;
+  image: string;
+}
+
+interface IPermissions {
+  admin: boolean;
+  play: boolean;
 }
 
 interface IAppState {
   rooms: IRoom[];
-  chat: IChat[];
+  room: {
+    permissions: IPermissions;
+    name: string;
+    chat: IChat[];
+    users: IUser[];
+  };
   name: string;
   color: string;
+  theme: ITheme;
 }
 
 interface IAppPartialContext extends IAppState {
@@ -40,9 +64,19 @@ export interface IAppContext extends IAppPartialContext {
 
 const initialState = {
   rooms: [],
-  chat: [],
   name: 'Anonymous',
   color: '#000000',
+  room: {
+    permissions: { admin: false, play: false },
+    name: '',
+    chat: [],
+    users: [],
+  },
+  theme: {
+    primary: '#ffffff',
+    secondary: '#000000',
+    image: '',
+  },
 }
 export const AppContext = React.createContext<IAppPartialContext>(initialState);
 
@@ -51,6 +85,9 @@ class App extends React.PureComponent<{}, IAppState> {
   socket: SocketIOClient.Socket;
   constructor(props: {}) {
     super(props);
+    this.state = initialState;
+    this.modifier = new AppModifier(this);
+    
     this.socket = io('localhost:3001', {
       transports: ['websocket']
     });
@@ -59,34 +96,16 @@ class App extends React.PureComponent<{}, IAppState> {
     });
     this.socket.on('connect_error', () => console.log("error"));
     this.socket.on('connect', () => console.log("connected"));
-    this.socket.on('init', this.initEvent);
-    this.socket.on('addRoom', this.addRoomEvent);
-    this.socket.on('chat', this.chatEvent);
+    this.socket.on('chat', this.modifier.chatEvent);
+    this.socket.on('init', this.modifier.initEvent);
+    this.socket.on('roomList', this.modifier.roomListEvent);
+    this.socket.on('room', this.modifier.roomEvent);
     this.socket.emit('init');
 
-    this.state = initialState;
-    this.modifier = new AppModifier(this);
   };
 
-  addRoomEvent = (data: IRoom) => {
-    this.setState(oldState => update(oldState, {
-      rooms: { $push: [data] },
-    }));
-  }
-
-  initEvent = (data: {
-    rooms: IRoom[],
-    name: string,
-    color: string,
-  })=> {
-    this.setState(data);
-  }
   
-  chatEvent = (data: IChat) => {
-    this.setState(oldState => update(oldState, {
-      chat: { $push: [data] },
-    }));
-  }
+  routeRoom = ({ match }: RouteComponentProps<{ id: string }>) => <Room id={match.params.id} />;
   
   render() {
     return (
@@ -95,10 +114,13 @@ class App extends React.PureComponent<{}, IAppState> {
         modifier: this.modifier,
         ...this.state,
       }}>
-        <RoomList />
-        <Chat />
-        <Settings />
-        <Piano />
+        <div style={{ backgroundImage: `url(${this.state.theme.image})`}} >
+          <Settings />
+          <RoomList />
+          <Switch>
+            <Route path="/room/:id" component={this.routeRoom} />
+          </Switch>
+        </div>
       </AppContext.Provider>
     );
   }
@@ -110,12 +132,44 @@ class AppModifier {
   constructor(app: App) {
     this.app = app;
   }
-
-  onNameChange = (e: React.FormEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    this.app.setState({ name: e.currentTarget.value });
-  };
   
+  roomListEvent = (data: IRoom[]) => {
+    console.log(data);
+    this.app.setState({ rooms: data });
+  }
+
+  initEvent = (data: {
+    name: string,
+    color: string,
+  })=> {
+    this.app.setState(data);
+  }
+
+  chatEvent = (data: IChat) => {
+    console.log(data);
+    this.app.setState(oldState => update(oldState, {
+      room: {
+        chat: { $push: [data] },
+      },
+    }));
+  }
+  
+  roomEvent = (data: { permissions: IPermissions, name: string, users: IUser[], theme: ITheme }) => {
+    this.onThemeChange(data.theme);
+    console.log(data.permissions);
+    this.app.setState(oldState => update(oldState, {
+      room: {
+        permissions: { $set: data.permissions },
+        name: { $set: data.name },
+        users: { $set: data.users },
+      }
+    }));
+  }
+
+  onThemeChange = (theme: ITheme) => {
+    this.app.setState({ theme });
+  }
+
   onColorChange = (e: React.FormEvent<HTMLInputElement>) => {
     e.preventDefault();
     this.app.setState({ color: e.currentTarget.value });
