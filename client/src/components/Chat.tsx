@@ -1,5 +1,5 @@
 import React from "react";
-import { IChat, IAppContext, IUser, withContext } from '../App';
+import { IPermissions, IChat, IAppContext, withContext } from '../App';
 
 
 interface IChatProps {
@@ -41,10 +41,34 @@ class Chat extends React.PureComponent<IProps, IChatState> {
     this.setState({ message: e.currentTarget.value });
   }
 
+  onPermissionsUpdate = (id: string, permissions: IPermissions) => () => {
+    this.socket.emit('permissionsUpdate', {
+      id,
+      permissions,
+    });
+  }
+
   renderChatMessage = (chat: IChat, i: number) => {
+    const {
+      room,
+    } = this.props;
+    const actionButton = (() => {
+      const words = new Set(chat.message.split(/\W+/).map(word => word.toLowerCase()));
+      // Check if the person wants to play the piano
+      if ((words.has('i') || words.has('me')) && words.has('play') && room.permissions.admin) {
+        return (
+          <button
+            onClick={this.onPermissionsUpdate(chat.user.id, { admin: false, play: true})}>
+            Allow to Play
+          </button>
+        );
+      }
+      return null;
+    })();
     return (
       <div key={i}>
-        <span style={{ color: chat.user.color }}>{chat.user.name}</span>: {chat.message}
+        <span><span style={{ color: chat.user.color }}>{chat.user.name}</span>: {chat.message}</span>
+        {actionButton}
       </div>
     );
   }

@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, withRouter, RouteComponentProps } from 'react-router-dom';
-import { IAppContext, withContext, IRoom } from '../App';
+import { IAppContext, withContext, IRoomListItem } from '../App';
 import RoomSettings from './RoomSettings';
 
 interface IRoomProps {
@@ -18,12 +18,12 @@ class RoomList extends React.PureComponent<IProps, IRoomState> {
     this.socket = props.socket;
   }
 
-  renderRoomItem = (room: IRoom) => {
+  renderRoomItem = (room: IRoomListItem) => {
     return (
       <div key={room.id}>
-        <Link to={`/room/${room.id}`}>
+        <Link to={`/room/${encodeURIComponent(room.id)}`}>
           <span>{room.name}</span>
-          <div>{room.owner}</div>
+          <div>{room.admins.length}</div>
           <span>Likes: {room.likes}, Viewers: {room.users}</span>
         </Link>
       </div>

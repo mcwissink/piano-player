@@ -1,5 +1,6 @@
 import React from "react";
-import { IUser, ITheme, IAppContext, withContext } from '../App';
+import { IUser, IRoom, IAppContext, withContext } from '../App';
+import RoomSettings from './RoomSettings';
 import Piano from './Piano';
 import Chat from './Chat';
 
@@ -16,46 +17,72 @@ class Room extends React.PureComponent<IProps, IRoomState> {
   constructor(props: IProps) {
     super(props);
     this.socket = props.socket;
-    this.socket.emit('joinRoom', {
-      id: props.id,
-    });
     this.state = {
-      loading: false,
+      loading: true,
     };
+  }
+
+  componentDidMount() {
+    this.socket.emit('joinRoom', {
+      id: this.props.id,
+    }, (room: IRoom|null) => {
+      this.setState({ loading: false });
+      this.props.modifier.roomEvent(room);
+    });
   }
 
   componentDidUpdate(prevProps: IProps) {
     if (this.props.id !== prevProps.id) {
       this.socket.emit('joinRoom', {
         id: this.props.id,
+      }, (room: IRoom|null) => {
+        this.setState({ loading: false });
+        this.props.modifier.roomEvent(room);
       });
     }
   }
 
-
-  renderUser(user: IUser) {
+  /* onLikeRoom = (e: number) => {
+   *   this.socket.emit('likeRoom', {
+   *     id: this.props.id,
+   *   });
+   * }
+   */
+  
+  renderUser = (user: IUser) => {
+    const {
+      room,
+    } = this.props;
     return (
-      <span style={{ backgroundColor: user.color }}>
+      <span key={user.id} style={{ backgroundColor: user.color }}>
         {user.name}
-        <button>Mute</button>
+        {room.permissions.admin ? (
+          <button>Admin Button</button>
+        ) : null}
       </span>
     );
   }    
 
   render() {
     const {
+      loading,
+    } = this.state;
+    const {
       room,
     } = this.props;
+    if (loading) {
+      return <div>loading...</div>;
+    }
     return (
       <div>
         <div>Room: {room.name}</div>
         <div>Permissions: {room.permissions.admin.toString()} {room.permissions.play.toString()}</div>
-        <div>Users</div>
+        <div>Players</div>
         <div>
-          {room.users.map(this.renderUser)}
+          {room.players.map(this.renderUser)}
         </div>
+        <RoomSettings roomName={room.name} />
         <Chat />
-        <Piano />
       </div>
     )
   }

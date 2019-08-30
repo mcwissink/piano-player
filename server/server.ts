@@ -57,12 +57,11 @@ interface IRoom {
   likes: number;
   permissions: Map<string, IPermissions>; 
   users: Set<string>;
-  owner: string;
   theme: ITheme;
 }
 
 
-const users: {[key: string]: User} = {};
+const users = new Map<string, User>();
 class RoomManager {
   rooms: Map<string, IRoom>;
   constructor() {
@@ -73,52 +72,105 @@ class RoomManager {
     io.emit('roomList', Array.from(this.rooms.values()).map(room => this.getRoomListItem(room)));
   }
 
+  updateRoom(room: IRoom) {
+    for (const id of room.users.values()) {
+      const user = users.get(id);
+      if (user !== undefined) {
+        user.socket.emit('roomUpdate', this.getRoomData(room, user));
+      }
+    }
+  }
+
+  getRoomGroup(room: IRoom, permission: keyof IPermissions) {
+    const group = [];
+    for (let entry of Array.from(room.permissions.entries())) {
+      if (entry[1][permission]) {
+        const user = users.get(entry[0]);
+        if (user !== undefined) {
+          group.push(user.getSharedData());
+        }
+      }
+    }
+    return group;
+  }
+
   getRoomListItem(room: IRoom) {
     return {
       id: room.id,
       name: room.name,
       likes: room.likes,
       users: room.users.size,
-      owner: room.owner,
+      admins: this.getRoomGroup(room, 'admin'),
     }
   }
 
-  getRoom(id: string, callback: (room: IRoom) => void) {
+  getRoomData(room: IRoom, user: User) {
+    return {
+      id: room.id,
+      permissions: this.getPermissions(user),
+      name: room.name,
+      theme: room.theme,
+      players: this.getRoomGroup(room, 'play'),
+    };
+  }
+
+  getRoom<T>(id: string, callback: (room: IRoom) => T, error?: () => void): T|undefined {
     const room = this.rooms.get(id);
-    if (room !== undefined) {
+    if (room === undefined) {
+      if (error !== undefined) {
+        error();
+      }
+    } else {
       return callback(room);
     }
   }
 
-  getPermission<T extends keyof IPermissions>(permission: T, user: User) {
-    let hasPermission = false;
-    this.getRoom(user.roomId, room => {
+  hasPermission<T extends keyof IPermissions>(permission: T, user: User) {
+    const hasPermission = this.getRoom(user.roomId, room => {
       const permissions = room.permissions.get(user.socket.id);
-      hasPermission = permissions !== undefined && permissions[permission];
+      return permissions !== undefined && permissions[permission];
     });
-    return hasPermission;
+    return hasPermission === undefined ? false : hasPermission;
+  }
+
+  setPermissions(user: User, id: string, permissions: IPermissions) {
+    this.getRoom(user.roomId, room => {
+      if (this.hasPermission('admin', user)) {
+        room.permissions.set(id, permissions);
+        this.updateRoom(room);
+      }
+    });
   }
   
+  getPermissions(user: User): IPermissions {
+    const permissions = this.getRoom(user.roomId, room => {
+      return room.permissions.get(user.socket.id);
+    });
+    return permissions === undefined ? { admin: false, play: false } : permissions;
+  }
 
   likeRoom(id: string) {
+    this.getRoom(id, room => {
+      room.likes++;
+    });
   }
 
   // TODO: handle the case when two rooms are submitting at the same time with the same name
   createRoom(name: string, theme: ITheme, user: User) {
     this.leaveRoom(user);
     if (!this.rooms.has(name)) {
-      this.rooms.set(name, {
+      const room = {
         id: name, 
         name,
         likes: 0,
         permissions: new Map([[user.getId(), { play: true, admin: true }]]),
-        users: new Set(),
-        owner: user.name,
+        users: new Set<string>(),
         theme: theme,
-      });
+      };
+      this.rooms.set(name, room);
       this.emitRoomList();
+      return this.getRoomData(room, user).name;
     }
-    return this.rooms.get(name);
   }
 
   deleteRoom(id: string) {
@@ -128,22 +180,11 @@ class RoomManager {
 
   joinRoom(id: string, user: User) {
     this.leaveRoom(user);
-    this.getRoom(id, room => {
-      if (!room.permissions.has(user.getId())) {
-        room.permissions.set(user.getId(), {
-          play: false,
-          admin: false,
-        });
-      }
+    return this.getRoom(id, room => {
       room.users.add(user.getId());
 
       user.joinRoom(room.id);
-      user.socket.emit('room', {
-        permissions: room.permissions.get(user.getId()),
-        name: room.name,
-        theme: room.theme,
-        users: [], // Array.from(room.users).map(userId => users[userId].getSharedData()),
-      });
+      return this.getRoomData(room, user);
     });
   }
 
@@ -163,7 +204,7 @@ const roomManager = new RoomManager();
 
 io.on('connection', socket => {
   const user = new User(socket);
-  users[user.getId()] = user;
+  users.set(user.getId(), user);
 
   socket.on('init', e => {
     socket.emit('init', {
@@ -182,20 +223,24 @@ io.on('connection', socket => {
     });
   });
 
-  socket.on('createRoom', e => {
-    roomManager.createRoom(e.name, e.theme, user);
+  socket.on('createRoom', (e, callback) => {
+    callback(roomManager.createRoom(e.name, e.theme, user));
   });
 
-  socket.on('joinRoom', e => {
-    roomManager.joinRoom(e.id, user);
+  socket.on('joinRoom', (e, callback) => {
+    callback(roomManager.joinRoom(e.id, user));
   });
 
   socket.on('likeRoom', e => {
     roomManager.likeRoom(user.roomId);
-  })
+  });
+
+  socket.on('permissionsUpdate', e => {
+    roomManager.setPermissions(user, e.id, e.permissions);
+  });
 
   socket.on('noteon', e => {
-    if (roomManager.getPermission('play', user)) {
+    if (roomManager.hasPermission('play', user)) {
       socket.to(user.roomId).broadcast.emit('noteon', {
         ...e,
         id: user.getId(),
@@ -205,7 +250,7 @@ io.on('connection', socket => {
   });
 
   socket.on('noteoff', e => {
-    if (roomManager.getPermission('play', user)) {
+    if (roomManager.hasPermission('play', user)) {
       socket.to(user.roomId).broadcast.emit('noteoff', {
         ...e,
         id: user.getId(),
@@ -222,7 +267,7 @@ io.on('connection', socket => {
   
   socket.on('disconnect', e => {
     roomManager.leaveRoom(user);
-    delete users[user.getId()];
+    users.delete(user.getId());
   });
 });
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import io from 'socket.io-client';
 import update from 'immutability-helper';
-import { Switch, Route, RouteComponentProps } from 'react-router-dom';
+import { Switch, Route, withRouter, RouteComponentProps } from 'react-router-dom';
 import './App.css';
 
 import RoomList from './components/RoomList';
@@ -13,13 +13,20 @@ export interface IChat {
   message: string;
 }
 
-
 export interface IRoom {
+  id: string;
+  permissions: IPermissions;
+  name: string;
+  theme: ITheme;
+  players: IUser[];
+}
+
+export interface IRoomListItem {
   id: string;
   name: string;
   likes: number;
   users: number;
-  owner: string;
+  admins: IUser[];
 }
 
 export interface IUser {
@@ -34,18 +41,18 @@ export interface ITheme {
   image: string;
 }
 
-interface IPermissions {
+export interface IPermissions {
   admin: boolean;
   play: boolean;
 }
 
 interface IAppState {
-  rooms: IRoom[];
+  rooms: IRoomListItem[];
   room: {
     permissions: IPermissions;
     name: string;
     chat: IChat[];
-    users: IUser[];
+    players: IUser[];
   };
   name: string;
   color: string;
@@ -70,7 +77,7 @@ const initialState = {
     permissions: { admin: false, play: false },
     name: '',
     chat: [],
-    users: [],
+    players: [],
   },
   theme: {
     primary: '#ffffff',
@@ -80,10 +87,10 @@ const initialState = {
 }
 export const AppContext = React.createContext<IAppPartialContext>(initialState);
 
-class App extends React.PureComponent<{}, IAppState> {
+class App extends React.PureComponent<RouteComponentProps, IAppState> {
   modifier: AppModifier;
   socket: SocketIOClient.Socket;
-  constructor(props: {}) {
+  constructor(props: RouteComponentProps) {
     super(props);
     this.state = initialState;
     this.modifier = new AppModifier(this);
@@ -99,7 +106,7 @@ class App extends React.PureComponent<{}, IAppState> {
     this.socket.on('chat', this.modifier.chatEvent);
     this.socket.on('init', this.modifier.initEvent);
     this.socket.on('roomList', this.modifier.roomListEvent);
-    this.socket.on('room', this.modifier.roomEvent);
+    this.socket.on('roomUpdate', this.modifier.roomEvent);
     this.socket.emit('init');
 
   };
@@ -133,7 +140,7 @@ class AppModifier {
     this.app = app;
   }
   
-  roomListEvent = (data: IRoom[]) => {
+  roomListEvent = (data: IRoomListItem[]) => {
     console.log(data);
     this.app.setState({ rooms: data });
   }
@@ -154,14 +161,18 @@ class AppModifier {
     }));
   }
   
-  roomEvent = (data: { permissions: IPermissions, name: string, users: IUser[], theme: ITheme }) => {
+  roomEvent = (data: IRoom|null) => {
+    if (data === null) {
+      this.app.props.history.push('/');
+      return;
+    }
     this.onThemeChange(data.theme);
     console.log(data.permissions);
     this.app.setState(oldState => update(oldState, {
       room: {
         permissions: { $set: data.permissions },
         name: { $set: data.name },
-        users: { $set: data.users },
+        players: { $set: data.players },
       }
     }));
   }
@@ -198,4 +209,4 @@ export function withContext<P extends object>(WrappedComponent: React.ComponentT
   }
 }
 
-export default App;
+export default withRouter(App);
