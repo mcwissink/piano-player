@@ -5,7 +5,7 @@ import { Switch, Route, RouteComponentProps } from 'react-router-dom';
 import './App.css';
 
 import RoomList from './components/RoomList';
-import Settings from './components/Settings';
+import Settings from './components/UserSettings';
 import Room from './components/Room';
 import { calculateBlurByImageSize } from './util/calculateBackgroundBlurFromImage';
 
@@ -74,7 +74,7 @@ const initialState = {
     users: [],
   },
   theme: {
-    primary: '#ffffff',
+    primary: '#DD51DD',
     secondary: '#000000',
     image: '',
   },
@@ -115,10 +115,15 @@ class App extends React.PureComponent<{}, IAppState> {
         modifier: this.modifier,
         ...this.state,
       }}>
-        <div id="pianoPageBackground" style={{ backgroundImage: `url(${this.state.theme.image})`, MozBackgroundSize: 'cover', filter: `blur(${ calculateBlurByImageSize(this.state.theme.image) }px)` }} />
+        <div id="piano-page-background" style={{ backgroundImage: `url(${this.state.theme.image})`, MozBackgroundSize: 'cover', filter: `blur(${ calculateBlurByImageSize(this.state.theme.image) }px)` }} />
         <div id="content">
-          <Settings />
-          <RoomList />
+          <div><h1 id="header-logo-text" style={{textShadow: `rgba(0, 0, 0, 0.86) 0px 0px 5px, 4px 4px 1px ${this.state.theme.primary}`}}>Pianooooooo</h1></div>
+          <div />
+          <div />
+          <div id="sidebar-container">
+            <Settings />
+            <RoomList />
+          </div>
           <Switch>
             <Route path="/room/:id" component={this.routeRoom} />
           </Switch>
@@ -175,6 +180,16 @@ class AppModifier {
   onColorChange = (e: React.FormEvent<HTMLInputElement>) => {
     e.preventDefault();
     this.app.setState({ color: e.currentTarget.value });
+
+    // Find a way to make this more React-like.
+    // This is a work around to get a better styling on the color picker without using unofficial CSS selectors
+    // Copy from https://stackoverflow.com/a/11471224/2930176
+    const color_picker: HTMLInputElement | null = document.getElementById("color-picker") as HTMLInputElement;
+    const color_picker_wrapper = document.getElementById("color-picker-wrapper");
+    if (color_picker_wrapper !== null && color_picker !== null && color_picker.value !== null) {
+      color_picker_wrapper.style.backgroundColor = color_picker.value;
+      color_picker_wrapper.style.backgroundColor = color_picker.value;
+    }
   }
 }
 
