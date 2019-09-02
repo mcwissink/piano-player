@@ -5,128 +5,224 @@ const app = express();
 const server = new http.Server(app);
 const io = socket(server);
 
-interface IRoom {
-  id: string,
-  name: string,
-  likes: number,
-  owner: string,
-}
-
 class User {
-  id: string;
+  socket: socket.Socket
   color: string;
   name: string;
-  room?: IRoom;
-  constructor(id: string) {
-    this.id = id;
+  roomId: string;
+  constructor(socket: socket.Socket) {
+    this.socket = socket;
     this.name = 'Anonymous';
-    this.color = '#'+(Math.random()*0xFFFFFF<<0).toString(16);
+    this.color = "#000000".replace(/0/g, () => (~~(Math.random()*16)).toString(16));
+    this.roomId = '';
   };
 
-  getRoomId() {
-    return this.room === undefined ? '' : this.room.id;
+  getId() {
+    return this.socket.id;
   }
+
+  getSharedData() {
+    return {
+      id: this.socket.id,
+      name: this.name,
+      color: this.color,
+    };
+  }
+
+  joinRoom(id: string) {
+    this.roomId = id;
+    this.socket.join(id);
+  }
+
+  leaveRoom() {
+    this.socket.leave(this.roomId);
+    this.roomId = '';
+  }
+}
+
+interface ITheme {
+  primary: string;
+  secondary: string;
+  image: string;
+}
+
+interface IPermissions {
+  play: boolean;
+  admin: boolean;
+}
+
+interface IRoom {
+  id: string;
+  name: string;
+  likes: number;
+  permissions: Map<string, IPermissions>; 
+  users: Set<string>;
+  owner: string;
+  theme: ITheme;
 }
 
 
 const users: {[key: string]: User} = {};
 class RoomManager {
-  rooms: {[key: string]: IRoom};
+  rooms: Map<string, IRoom>;
   constructor() {
-    this.rooms = {};
+    this.rooms = new Map();
   }
 
-  getRooms() {
-    return Object.values(this.rooms);
+  emitRoomList() {
+    io.emit('roomList', Array.from(this.rooms.values()).map(room => this.getRoomListItem(room)));
   }
 
-  getRoom(id: string) {
-    return this.rooms[id];
-  }
-
-  createRoom(user: User, name: string) {
-    this.rooms[user.id] = {
-      id: user.id,
-      name,
-      likes: 0,
-      owner: user.name,
+  getRoomListItem(room: IRoom) {
+    return {
+      id: room.id,
+      name: room.name,
+      likes: room.likes,
+      users: room.users.size,
+      owner: room.owner,
     }
-    return this.rooms[user.id];
   }
 
-  deleteRoom(user: User) {
-    delete this.rooms[user.id];
+  getRoom(id: string, callback: (room: IRoom) => void) {
+    const room = this.rooms.get(id);
+    if (room !== undefined) {
+      return callback(room);
+    }
   }
+
+  getPermission<T extends keyof IPermissions>(permission: T, user: User) {
+    let hasPermission = false;
+    this.getRoom(user.roomId, room => {
+      const permissions = room.permissions.get(user.socket.id);
+      hasPermission = permissions !== undefined && permissions[permission];
+    });
+    return hasPermission;
+  }
+  
+
+  likeRoom(id: string) {
+  }
+
+  // TODO: handle the case when two rooms are submitting at the same time with the same name
+  createRoom(name: string, theme: ITheme, user: User) {
+    this.leaveRoom(user);
+    if (!this.rooms.has(name)) {
+      this.rooms.set(name, {
+        id: name, 
+        name,
+        likes: 0,
+        permissions: new Map([[user.getId(), { play: true, admin: true }]]),
+        users: new Set(),
+        owner: user.name,
+        theme: theme,
+      });
+      this.emitRoomList();
+    }
+    return this.rooms.get(name);
+  }
+
+  deleteRoom(id: string) {
+    this.rooms.delete(id);
+    this.emitRoomList();
+  }
+
+  joinRoom(id: string, user: User) {
+    this.leaveRoom(user);
+    this.getRoom(id, room => {
+      if (!room.permissions.has(user.getId())) {
+        room.permissions.set(user.getId(), {
+          play: false,
+          admin: false,
+        });
+      }
+      room.users.add(user.getId());
+
+      user.joinRoom(room.id);
+      user.socket.emit('room', {
+        permissions: room.permissions.get(user.getId()),
+        name: room.name,
+        theme: room.theme,
+        users: [], // Array.from(room.users).map(userId => users[userId].getSharedData()),
+      });
+    });
+  }
+
+  leaveRoom(user: User) {
+    this.getRoom(user.roomId, room => {
+      room.users.delete(user.getId());
+      user.leaveRoom();
+      if (room.users.size === 0) {
+        this.deleteRoom(room.id);
+      }
+    });
+  }
+
 }
 
 const roomManager = new RoomManager();
 
 io.on('connection', socket => {
-  const user = new User(socket.id);
-  users[user.id] = user;
+  const user = new User(socket);
+  users[user.getId()] = user;
 
   socket.on('init', e => {
     socket.emit('init', {
-      rooms: roomManager.getRooms(),
       name: user.name,
       color: user.color,
     });
+    roomManager.emitRoomList();
   });
 
   socket.on('settings', e => {
-    console.log('yo');
-    user.name = e.name;
+    user.name = e.name === '' ? user.name : e.name;
     user.color = e.color;
-  });
-
-  socket.on('createRoom', e => {
-    // Leave the current room
-    socket.leave(user.getRoomId());
-    // Create and join a new room
-    user.room = roomManager.createRoom(user, e.name);
-    socket.join(user.getRoomId());
-    socket.emit('addRoom', user.room);
-    socket.broadcast.emit('addRoom', user.room); 
-  });
-
-  socket.on('joinRoom', e => {
-    roomManager.deleteRoom(user);
-    socket.leave(user.getRoomId());
-    user.room = roomManager.getRoom(e.roomId);
-    socket.join(user.getRoomId());
-  });
-
-  socket.on('noteon', e => {
-    socket.to(user.getRoomId()).broadcast.emit('noteon', {
-      ...e,
-      id: socket.id,
+    socket.emit('init', {
+      name: user.name,
       color: user.color,
     });
   });
 
+  socket.on('createRoom', e => {
+    roomManager.createRoom(e.name, e.theme, user);
+  });
+
+  socket.on('joinRoom', e => {
+    roomManager.joinRoom(e.id, user);
+  });
+
+  socket.on('likeRoom', e => {
+    roomManager.likeRoom(user.roomId);
+  })
+
+  socket.on('noteon', e => {
+    if (roomManager.getPermission('play', user)) {
+      socket.to(user.roomId).broadcast.emit('noteon', {
+        ...e,
+        id: user.getId(),
+        color: user.color,
+      });
+    }
+  });
+
   socket.on('noteoff', e => {
-    socket.to(user.getRoomId()).broadcast.emit('noteoff', {
-      ...e,
-      id: socket.id,
-    });
+    if (roomManager.getPermission('play', user)) {
+      socket.to(user.roomId).broadcast.emit('noteoff', {
+        ...e,
+        id: user.getId(),
+      });
+    }
   });
 
   socket.on('chat', e => {
-    socket.emit('chat', {
+    io.to(user.roomId).emit('chat', {
       ...e,
-      name: user.name,
-      id: socket.id,
-    });
-    socket.to(user.getRoomId()).broadcast.emit('chat', {
-      ...e,
-      name: user.name,
-      id: socket.id,
+      user: user.getSharedData(),
     });
   });
   
   socket.on('disconnect', e => {
-    roomManager.deleteRoom(user);
-    delete users[user.id];
+    roomManager.leaveRoom(user);
+    delete users[user.getId()];
   });
 });
 

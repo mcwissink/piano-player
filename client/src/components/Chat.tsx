@@ -1,5 +1,6 @@
 import React from "react";
-import { IAppContext, withContext } from '../App';
+import { IChat, IAppContext, IUser, withContext } from '../App';
+
 
 interface IChatProps {
 
@@ -20,6 +21,7 @@ class Chat extends React.PureComponent<IProps, IChatState> {
     };
   }
 
+  
   onMessageSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const {
@@ -39,17 +41,25 @@ class Chat extends React.PureComponent<IProps, IChatState> {
     this.setState({ message: e.currentTarget.value });
   }
 
+  renderChatMessage = (chat: IChat, i: number) => {
+    return (
+      <div key={i}>
+        <span style={{ color: chat.user.color }}>{chat.user.name}</span>: {chat.message}
+      </div>
+    );
+  }
+
   render() {
+    const {
+      room,
+    } = this.props;
     const {
       message,
     } = this.state;
-    const {
-      chat,
-    } = this.props;
     return (
       <div>
         <span>Chat</span>
-        {chat.map((c, i) => <div key={i}>{c.name}: {c.message}</div>)}
+        {room.chat.map((c, i) => this.renderChatMessage(c, i))}
         <form onSubmit={this.onMessageSubmit}>
           <input type="text" value={message} onChange={this.onMessageChange} />
           <input type="submit" value="Send" />

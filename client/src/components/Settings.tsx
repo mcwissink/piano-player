@@ -6,7 +6,7 @@ interface ISettingsProps {
 }
 
 interface ISettingsState {
-  
+  name: string;
 }
 
 type IProps = ISettingsProps & IAppContext;
@@ -15,19 +15,31 @@ class Settings extends React.PureComponent<IProps, ISettingsState> {
   constructor(props: IProps) {
     super(props);
     this.socket = props.socket;
+    this.state = {
+      name: '',
+    };
   }
 
   onSettingsSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const {
-      name,
       color,
     } = this.props;
+    const {
+      name
+    } = this.state;
     this.socket.emit('settings', {
       name,
       color,
     });
+    this.setState({ name: '' });
   }
+
+
+  onNameChange = (e: React.FormEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    this.setState({ name: e.currentTarget.value });
+  };
 
   render() {
     const {
@@ -37,8 +49,9 @@ class Settings extends React.PureComponent<IProps, ISettingsState> {
     } = this.props;
     return (
       <div>
+        <span>Settings</span>
         <form onSubmit={this.onSettingsSubmit}>
-          <input type="text" placeholder={name} onChange={modifier.onNameChange} />
+          <input type="text" placeholder={name} value={this.state.name} onChange={this.onNameChange} />
           <input type="color" value={color} onChange={modifier.onColorChange} />
           <input type="submit" value="Save"/>
         </form>
