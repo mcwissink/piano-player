@@ -7,6 +7,7 @@ import './App.css';
 import RoomList from './components/RoomList';
 import Settings from './components/Settings';
 import Room from './components/Room';
+import { calculateBlurByImageSize } from './util/calculateBackgroundBlurFromImage';
 
 export interface IChat {
   user: IUser;
@@ -114,7 +115,8 @@ class App extends React.PureComponent<{}, IAppState> {
         modifier: this.modifier,
         ...this.state,
       }}>
-        <div style={{ backgroundImage: `url(${this.state.theme.image})`}} >
+        <div id="pianoPageBackground" style={{ backgroundImage: `url(${this.state.theme.image})`, MozBackgroundSize: 'cover', filter: `blur(${ calculateBlurByImageSize(this.state.theme.image) }px)` }} />
+        <div id="content">
           <Settings />
           <RoomList />
           <Switch>
