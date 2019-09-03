@@ -23,8 +23,8 @@ class RoomList extends React.PureComponent<IProps, IRoomState> {
       <div key={room.id}>
         <Link to={`/room/${encodeURIComponent(room.id)}`}>
           <span>{room.name}</span>
-          <div>{room.admins.length}</div>
-          <span>Likes: {room.likes}, Viewers: {room.users}</span>
+          <div>{room.admins.length > 0 ? room.admins[0].name : null}</div>
+          <span>Likes: {room.likes}, Viewers: {room.viewers}</span>
         </Link>
       </div>
     )
@@ -37,7 +37,7 @@ class RoomList extends React.PureComponent<IProps, IRoomState> {
     return (
       <div>
         <span>Rooms</span>
-        {rooms.map(r => this.renderRoomItem(r))}
+        {rooms.sort((a, b) => b.viewers - a.viewers).map(r => this.renderRoomItem(r))}
         <RoomSettings />
       </div>
     )

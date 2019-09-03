@@ -13,7 +13,7 @@ class User {
   constructor(socket: socket.Socket) {
     this.socket = socket;
     this.name = 'Anonymous';
-    this.color = "#000000".replace(/0/g, () => (~~(Math.random()*16)).toString(16));
+    this.color = "#000000";
     this.roomId = '';
   };
 
@@ -72,7 +72,7 @@ class RoomManager {
     io.emit('roomList', Array.from(this.rooms.values()).map(room => this.getRoomListItem(room)));
   }
 
-  updateRoom(room: IRoom) {
+  emitRoomUpdate(room: IRoom) {
     for (const id of room.users.values()) {
       const user = users.get(id);
       if (user !== undefined) {
@@ -99,7 +99,7 @@ class RoomManager {
       id: room.id,
       name: room.name,
       likes: room.likes,
-      users: room.users.size,
+      viewers: room.users.size,
       admins: this.getRoomGroup(room, 'admin'),
     }
   }
@@ -125,20 +125,19 @@ class RoomManager {
     }
   }
 
-  hasPermission<T extends keyof IPermissions>(permission: T, user: User) {
-    const hasPermission = this.getRoom(user.roomId, room => {
+  hasPermission<T extends keyof IPermissions>(user: User, permission: T, callback: (room: IRoom) => void) {
+    this.getRoom(user.roomId, room => {
       const permissions = room.permissions.get(user.socket.id);
-      return permissions !== undefined && permissions[permission];
+      if (permissions !== undefined && permissions[permission]) {
+        callback(room);
+      }
     });
-    return hasPermission === undefined ? false : hasPermission;
   }
 
-  setPermissions(user: User, id: string, permissions: IPermissions) {
-    this.getRoom(user.roomId, room => {
-      if (this.hasPermission('admin', user)) {
-        room.permissions.set(id, permissions);
-        this.updateRoom(room);
-      }
+  updatePermissions(user: User, id: string, permissions: IPermissions) {
+    this.hasPermission(user, 'admin', room => {
+      room.permissions.set(id, permissions);
+      this.emitRoomUpdate(room);
     });
   }
   
@@ -156,7 +155,7 @@ class RoomManager {
   }
 
   // TODO: handle the case when two rooms are submitting at the same time with the same name
-  createRoom(name: string, theme: ITheme, user: User) {
+  createRoom(user: User, name: string, theme: ITheme) {
     this.leaveRoom(user);
     if (!this.rooms.has(name)) {
       const room = {
@@ -171,6 +170,16 @@ class RoomManager {
       this.emitRoomList();
       return this.getRoomData(room, user).name;
     }
+  }
+
+  updateRoom(user: User, theme: ITheme) {
+    this.hasPermission(user, 'admin', room => {
+      this.rooms.set(room.name, {
+        ...room,
+        theme,
+      });
+      this.emitRoomUpdate(room);
+    });
   }
 
   deleteRoom(id: string) {
@@ -206,56 +215,53 @@ io.on('connection', socket => {
   const user = new User(socket);
   users.set(user.getId(), user);
 
-  socket.on('init', e => {
-    socket.emit('init', {
-      name: user.name,
-      color: user.color,
-    });
+  socket.on('roomList', e => {
     roomManager.emitRoomList();
   });
-
-  socket.on('settings', e => {
+  
+  socket.on('settings', (e, callback) => {
     user.name = e.name === '' ? user.name : e.name;
     user.color = e.color;
-    socket.emit('init', {
-      name: user.name,
-      color: user.color,
-    });
+    callback(user.getSharedData());
   });
 
   socket.on('createRoom', (e, callback) => {
-    callback(roomManager.createRoom(e.name, e.theme, user));
+    callback(roomManager.createRoom(user, e.name, e.theme));
   });
 
   socket.on('joinRoom', (e, callback) => {
     callback(roomManager.joinRoom(e.id, user));
   });
 
+  socket.on('updateRoom', e => {
+    roomManager.updateRoom(user, e.theme);
+  });
+
   socket.on('likeRoom', e => {
     roomManager.likeRoom(user.roomId);
   });
 
-  socket.on('permissionsUpdate', e => {
-    roomManager.setPermissions(user, e.id, e.permissions);
+  socket.on('updatePermissions', e => {
+    roomManager.updatePermissions(user, e.id, e.permissions);
   });
 
   socket.on('noteon', e => {
-    if (roomManager.hasPermission('play', user)) {
+    roomManager.hasPermission(user, 'play', room => {
       socket.to(user.roomId).broadcast.emit('noteon', {
         ...e,
         id: user.getId(),
         color: user.color,
       });
-    }
+    });
   });
 
   socket.on('noteoff', e => {
-    if (roomManager.hasPermission('play', user)) {
+    roomManager.hasPermission(user, 'play', room => {
       socket.to(user.roomId).broadcast.emit('noteoff', {
         ...e,
         id: user.getId(),
       });
-    }
+    });
   });
 
   socket.on('chat', e => {

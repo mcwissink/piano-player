@@ -1,5 +1,6 @@
 import React from "react";
 import { IUser, IRoom, IAppContext, withContext } from '../App';
+import { withRouter, RouteComponentProps } from 'react-router-dom';
 import RoomSettings from './RoomSettings';
 import Piano from './Piano';
 import Chat from './Chat';
@@ -9,26 +10,25 @@ interface IRoomProps {
 }
 
 interface IRoomState {
-  loading: boolean;
 }
-type IProps = IRoomProps & IAppContext;
+type IProps = IRoomProps & IAppContext & RouteComponentProps;
 class Room extends React.PureComponent<IProps, IRoomState> {
   socket: SocketIOClient.Socket;
   constructor(props: IProps) {
     super(props);
     this.socket = props.socket;
-    this.state = {
-      loading: true,
-    };
   }
 
   componentDidMount() {
     this.socket.emit('joinRoom', {
       id: this.props.id,
     }, (room: IRoom|null) => {
-      this.setState({ loading: false });
       this.props.modifier.roomEvent(room);
     });
+  }
+
+  componentWillUnmount() {
+    this.props.modifier.onLeaveRoom();
   }
 
   componentDidUpdate(prevProps: IProps) {
@@ -36,7 +36,6 @@ class Room extends React.PureComponent<IProps, IRoomState> {
       this.socket.emit('joinRoom', {
         id: this.props.id,
       }, (room: IRoom|null) => {
-        this.setState({ loading: false });
         this.props.modifier.roomEvent(room);
       });
     }
@@ -52,12 +51,13 @@ class Room extends React.PureComponent<IProps, IRoomState> {
   renderUser = (user: IUser) => {
     const {
       room,
+      modifier,
     } = this.props;
     return (
       <span key={user.id} style={{ backgroundColor: user.color }}>
         {user.name}
-        {room.permissions.admin ? (
-          <button>Admin Button</button>
+        {room.permissions.admin && user.id !== this.socket.id ? (
+          <button onClick={modifier.onPermissionsUpdate(user.id, { admin: false, play: false})}>Remove Player</button>
         ) : null}
       </span>
     );
@@ -65,27 +65,26 @@ class Room extends React.PureComponent<IProps, IRoomState> {
 
   render() {
     const {
-      loading,
-    } = this.state;
-    const {
       room,
+      modifier,
+      history,
     } = this.props;
-    if (loading) {
+    if (modifier.noRoom()){
       return <div>loading...</div>;
     }
     return (
       <div>
+        <button onClick={() => history.push('/')}>Leave Room</button>
         <div>Room: {room.name}</div>
-        <div>Permissions: {room.permissions.admin.toString()} {room.permissions.play.toString()}</div>
         <div>Players</div>
         <div>
           {room.players.map(this.renderUser)}
         </div>
-        <RoomSettings roomName={room.name} />
+        {room.permissions.admin ? <RoomSettings roomName={room.name} /> : null}
         <Chat />
       </div>
     )
   }
 }
 
-export default withContext(Room);
+export default withRouter(withContext(Room));
