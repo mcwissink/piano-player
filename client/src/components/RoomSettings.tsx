@@ -1,55 +1,63 @@
 import React from "react";
-import { Link, withRouter, RouteComponentProps } from 'react-router-dom';
-import { ITheme, IAppContext, withContext, IRoom } from '../App';
-import Button from "./Button";
+import update from 'immutability-helper';
+import { withRouter, RouteComponentProps } from 'react-router-dom';
+import { ITheme, IAppContext, withContext } from '../App';
 
 
-interface IRoomSettingsState extends ITheme {
+interface IRoomSettingsState {
   name: string;
+  theme: ITheme;
 }
 
-const initialState = {
-  name: '',
-  primary: '#ffffff',
-  secondary: '#000000',
-  image: '',
-};
-
-type IProps = {} & IAppContext & RouteComponentProps;
-class RoomSettings extends React.PureComponent<IProps, IRoomSettingsState> {
+type IProps = {
+  roomName?: string;
+} & IAppContext & RouteComponentProps;
+class RoomList extends React.PureComponent<IProps, IRoomSettingsState> {
   socket: SocketIOClient.Socket;
   constructor(props: IProps) {
     super(props);
     this.socket = props.socket;
-    this.state = initialState;
+    const theme = props.roomName === undefined ? {
+      primary: '#ffffff',
+      secondary: '#000000',
+      image: '',
+    } : props.theme;
+    this.state = {
+      name: props.roomName === undefined ? '' : props.roomName,
+      theme,
+    };
+
   }
 
   canSubmit = () => {
     const {
       name,
     } = this.state;
-    return (name !== '' && this.props.rooms.find(room => room.name === name) === undefined);
+    return this.props.roomName === undefined ? (name !== '' && this.props.rooms.find(room => room.name === name) === undefined) : true;
   }
 
   onRoomSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const {
       name,
-      primary,
-      secondary,
-      image,
+      theme,
     } = this.state;
+    const parsedName = name.trim();
     if (this.canSubmit()) {
-      this.socket.emit('createRoom', {
-        name,
-        theme: {
-          primary,
-          secondary,
-          image,
-        },
-      });
-      this.setState(initialState);
-      this.props.history.push(`/room/${name}`);
+      if (this.props.roomName === undefined) {
+        this.socket.emit('createRoom', {
+          name: parsedName,
+          theme,
+        }, (roomName?: string) => {
+          if (roomName !== undefined) {
+            this.props.history.push(`/room/${encodeURIComponent(roomName)}`);
+          }
+        }); 
+      } else {
+        this.socket.emit('updateRoom', {
+          theme,
+        });
+      }
     }
   };
 
@@ -61,62 +69,48 @@ class RoomSettings extends React.PureComponent<IProps, IRoomSettingsState> {
 
   onPrimaryChange = (e: React.FormEvent<HTMLInputElement>) => {
     e.preventDefault();
-    const color_picker: HTMLInputElement | null = document.getElementById("color-picker-2") as HTMLInputElement;
-    const color_picker_wrapper = document.getElementById("color-picker-wrapper-2");
-    if (color_picker_wrapper !== null && color_picker !== null && color_picker.value !== null) {
-      color_picker_wrapper.style.backgroundColor = color_picker.value;
-      color_picker_wrapper.style.backgroundColor = color_picker.value;
-    }
-    this.setState({ primary: e.currentTarget.value });
+    const color = e.currentTarget.value;
+    this.setState(oldState => update(oldState, {
+      theme: {
+        primary: { $set: color },
+      },
+    }));
   }
 
   onSecondaryChange = (e: React.FormEvent<HTMLInputElement>) => {
     e.preventDefault();
-    const color_picker: HTMLInputElement | null = document.getElementById("color-picker-3") as HTMLInputElement;
-    const color_picker_wrapper = document.getElementById("color-picker-wrapper-3");
-    if (color_picker_wrapper !== null && color_picker !== null && color_picker.value !== null) {
-      color_picker_wrapper.style.backgroundColor = color_picker.value;
-      color_picker_wrapper.style.backgroundColor = color_picker.value;
-    }
-    this.setState({ secondary: e.currentTarget.value });
+    const color = e.currentTarget.value;
+    this.setState(oldState => update(oldState, {
+      theme: {
+        secondary: { $set: color },
+      },
+    }));
   }
   onImageChange = (e: React.FormEvent<HTMLInputElement>) => {
     e.preventDefault();
-    this.setState({ image: e.currentTarget.value });
-  }
-  renderRoomItem = (room: IRoom) => {
-    return (
-      <div key={room.id}>
-        <Link to={`/room/${room.id}`}>
-          <span>{room.name}</span>
-          <div>{room.owner}</div>
-          <span>Likes: {room.likes}, Viewers: {room.users}</span>
-        </Link>
-      </div>
-    )
+    const color = e.currentTarget.value;
+    this.setState(oldState => update(oldState, {
+      theme: {
+        image: { $set: color },
+      },
+    }));
   }
 
   render() {
     const {
       name,
-      primary,
-      secondary,
-      image,
+      theme,
     } = this.state;
+    const hasRoom = this.props.roomName !== undefined;
     return (
       <div>
         <h1>New Room</h1>
         <form onSubmit={this.onRoomSubmit}>
-          <input type="text" value={name} placeholder="Room Name" onChange={this.onNameChange} />
-          <div id="color-picker-wrapper-2">
-              <input id="color-picker-2" type="color" value={primary} onChange={this.onPrimaryChange} />
-            </div>
-            <div id="color-picker-wrapper-3">
-              <input id="color-picker-3" type="color" value={secondary} onChange={this.onSecondaryChange} />
-            </div>
-            <input type="text" value={image} placeholder="Paste background image" onChange={this.onImageChange} />
-
-          <Button type="submit" value="Create Room" disabled={!this.canSubmit()} />
+          {hasRoom ? null : <input type="text" value={name} onChange={this.onNameChange} />}
+          <input type="color" value={theme.primary} onChange={this.onPrimaryChange} />
+          <input type="color" value={theme.secondary} onChange={this.onSecondaryChange} />
+          <input type="text" value={theme.image} onChange={this.onImageChange} />
+          <input type="submit" value={`${hasRoom ? 'Update' : 'Create'} Room`} disabled={!this.canSubmit()} />
         </form>
       </div>
     )

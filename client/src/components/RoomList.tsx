@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, withRouter, RouteComponentProps } from 'react-router-dom';
-import { IAppContext, withContext, IRoom } from '../App';
+import { IAppContext, withContext, IRoomListItem } from '../App';
 import RoomSettings from './RoomSettings';
 
 interface IRoomProps {
@@ -18,34 +18,15 @@ class RoomList extends React.PureComponent<IProps, IRoomState> {
     this.socket = props.socket;
   }
 
-  renderRoomItem = (room: IRoom) => {
+  renderRoomItem = (room: IRoomListItem) => {
     return (
-    <div key={room.id} className="room-list-item-container">
-      <Link to={`/room/${room.id}`}>
-        <div className="icon-container">
-        <div className="icon-outer">
-          <div className="icon-inner">
-          </div>
-        </div>
-        <img src={require('../img/play.png')} className="icon-image" />
-        </div>
-      </Link>
-      <Link to={`/room/${room.id}`}>
-        <div className="icon-container">
-        <div className="icon-outer">
-          <div className="icon-inner">
-          </div>
-        </div>
-        <img src={require('../img/audio.png')} className="icon-image" />
-        </div>
-      </Link>
-      <Link to={`/room/${room.id}`} style={{textDecoration: 'none'}}>
-        <div style={{display: 'flex', flexDirection: 'column'}}>
-          <h4 className="room-list-item-room-name">{room.name.substr(0, 30)}</h4>
-          <span className="room-list-item-metadata">{room.owner} {room.likes} {room.users}</span>
-        </div>
-      </Link>
-    </div>
+      <div key={room.id}>
+        <Link to={`/room/${encodeURIComponent(room.id)}`}>
+          <span>{room.name}</span>
+          <div>{room.admins.length > 0 ? room.admins[0].name : null}</div>
+          <span>Likes: {room.likes}, Viewers: {room.viewers}</span>
+        </Link>
+      </div>
     )
   }
 
@@ -55,8 +36,9 @@ class RoomList extends React.PureComponent<IProps, IRoomState> {
     } = this.props;
     return (
       <div>
-        <h2>Rooms</h2>
-        {rooms.map(r => this.renderRoomItem(r))}
+        <span>Rooms</span>
+        {rooms.sort((a, b) => b.viewers - a.viewers).map(r => this.renderRoomItem(r))}
+        <RoomSettings />
       </div>
     )
   }

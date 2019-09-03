@@ -231,13 +231,20 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
       device,
       devices,
     } = this.state;
+    const {
+      room,
+    } = this.props;
     return (
       <div>
         <canvas ref={this.setup} />
-        <select value={device} onChange={this.handleDeviceSelect}>
-          <option value=""></option>
-          {devices.map(device => <option key={device} value={device}>{device}</option>)}
-        </select>
+        {room.permissions.admin ? (
+          <div>
+            <select value={device} onChange={this.handleDeviceSelect}>
+              <option value=""></option>
+              {devices.map(device => <option key={device} value={device}>{device}</option>)}
+            </select>
+          </div>
+        ) : null}
       </div>
     )
   }
