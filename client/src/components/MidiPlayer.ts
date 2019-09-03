@@ -1,6 +1,9 @@
 import Soundfont from "soundfont-player"
 import * as WebMidi from "webmidi";
 import { Player } from "../../@types/soundfont-player";
+// Look into web audio font
+// https://www.npmjs.com/package/webaudiofont
+
 
 export default class MidiPlayer {
   soundfont: Soundfont.Player | null;
