@@ -12,7 +12,7 @@ interface IRoomSettingsState {
 type IProps = {
   roomName?: string;
 } & IAppContext & RouteComponentProps;
-class RoomList extends React.PureComponent<IProps, IRoomSettingsState> {
+class RoomSettings extends React.PureComponent<IProps, IRoomSettingsState> {
   socket: SocketIOClient.Socket;
   constructor(props: IProps) {
     super(props);
@@ -106,10 +106,10 @@ class RoomList extends React.PureComponent<IProps, IRoomSettingsState> {
       <div>
         <h1>New Room</h1>
         <form onSubmit={this.onRoomSubmit}>
-          {hasRoom ? null : <input type="text" value={name} onChange={this.onNameChange} />}
+          {hasRoom ? null : <input placeholder="New Room Name" type="text" value={name} onChange={this.onNameChange} />}
           <input type="color" value={theme.primary} onChange={this.onPrimaryChange} />
           <input type="color" value={theme.secondary} onChange={this.onSecondaryChange} />
-          <input type="text" value={theme.image} onChange={this.onImageChange} />
+          <input placeholder="Image URL" type="text" value={theme.image} onChange={this.onImageChange} />
           <input type="submit" value={`${hasRoom ? 'Update' : 'Create'} Room`} disabled={!this.canSubmit()} />
         </form>
       </div>

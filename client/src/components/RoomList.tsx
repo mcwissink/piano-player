@@ -36,9 +36,8 @@ class RoomList extends React.PureComponent<IProps, IRoomState> {
     } = this.props;
     return (
       <div>
-        <span>Rooms</span>
+        <h2>Rooms</h2>
         {rooms.sort((a, b) => b.viewers - a.viewers).map(r => this.renderRoomItem(r))}
-        <RoomSettings />
       </div>
     )
   }

@@ -125,9 +125,15 @@ class App extends React.PureComponent<RouteComponentProps, IAppState> {
         modifier: this.modifier,
         ...this.state,
       }}>
-        <div style={{ backgroundImage: `url(${this.state.theme.image})`}} >
-          {this.modifier.noRoom() ? <Settings /> : null}
-          <RoomList />
+        <div style={{ backgroundImage: `url(${this.state.theme.image})`}} />
+        <div id="content">
+          <h1>Pianooo</h1>
+          {this.modifier.noRoom() ? <UserSettings /> : null}
+          <div />
+          <div />
+          <div>
+            <RoomList />
+          </div>
           <Switch>
             <Route path="/room/:id" component={this.routeRoom} />
             <Route path="/" exact={true} component={this.routeCreateRoom} />

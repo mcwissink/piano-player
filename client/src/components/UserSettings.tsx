@@ -56,7 +56,7 @@ class Settings extends React.PureComponent<IProps, ISettingsState> {
       {this.state.askUsername !== undefined ? (
         <div className="username-lightbox-cover">
           <div className="username-lightbox-container">
-            <h1>Choose Your Username</h1>
+            <h1 style={{color: 'black'}}>Choose Your Username</h1>
             <form onSubmit={this.onSettingsSubmit} style={{display: 'flex', flexDirection: 'column'}}>
               <div style={{display: 'flex', alignItems: 'center', marginBottom: '1em'}}>
                 <div id="color-picker-wrapper" style={{backgroundColor: this.props.theme.primary, marginRight: '1em'}}>
