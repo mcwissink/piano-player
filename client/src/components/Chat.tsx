@@ -1,6 +1,6 @@
 import React from "react";
 import { IChat, IAppContext, IUser, withContext } from '../App';
-
+import Button from './Button';
 
 interface IChatProps {
 
@@ -62,7 +62,7 @@ class Chat extends React.PureComponent<IProps, IChatState> {
         {room.chat.map((c, i) => this.renderChatMessage(c, i))}
         <form onSubmit={this.onMessageSubmit}>
           <input type="text" value={message} onChange={this.onMessageChange} />
-          <input type="submit" value="Send" />
+          <Button type="submit" value="Send" />
         </form>
       </div>
     )

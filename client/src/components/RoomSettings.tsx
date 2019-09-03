@@ -1,6 +1,7 @@
 import React from "react";
 import { Link, withRouter, RouteComponentProps } from 'react-router-dom';
 import { ITheme, IAppContext, withContext, IRoom } from '../App';
+import Button from "./Button";
 
 
 interface IRoomSettingsState extends ITheme {
@@ -97,7 +98,7 @@ class RoomList extends React.PureComponent<IProps, IRoomSettingsState> {
           <input type="color" value={primary} onChange={this.onPrimaryChange} />
           <input type="color" value={secondary} onChange={this.onSecondaryChange} />
           <input type="text" value={image} onChange={this.onImageChange} />
-          <input type="submit" value="Create Room" disabled={!this.canSubmit()} />
+          <Button type="submit" value="Create Room" disabled={!this.canSubmit()} />
         </form>
       </div>
     )

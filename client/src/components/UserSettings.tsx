@@ -1,5 +1,6 @@
 import React from "react";
 import { IAppContext, withContext } from '../App';
+import Button from "./Button";
 
 interface ISettingsProps {
 
@@ -61,9 +62,9 @@ class Settings extends React.PureComponent<IProps, ISettingsState> {
                 <div id="color-picker-wrapper" style={{backgroundColor: this.props.theme.primary, marginRight: '1em'}}>
                   <input type="color" id="color-picker" value={color} onChange={modifier.onColorChange} />
                 </div>
-                <input className="input-border" type="text" placeholder={name} value={this.state.name} onChange={this.onNameChange} style={{width: '14em'}} />
+                <input className="input-border" autoFocus={true} type="text" placeholder={name} value={this.state.name} onChange={this.onNameChange} style={{width: '14em'}} />
               </div>
-              <input type="submit" value="Start" style={{backgroundColor: this.props.theme.primary}} />
+              <Button type="submit" value="Start" />
             </form>
           </div>
         </div>
