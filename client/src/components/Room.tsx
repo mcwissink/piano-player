@@ -47,16 +47,19 @@ class Room extends React.PureComponent<IProps, IRoomState> {
       room,
     } = this.props;
     return (
+      <>
       <div>
-        <div>Room: {room.name}</div>
-        <div>Permissions: {room.permissions.admin.toString()} {room.permissions.play.toString()}</div>
-        <div>Users</div>
+        {/* <div>Permissions: {room.permissions.admin.toString()} {room.permissions.play.toString()}</div> */}
         <div>
           {room.users.map(this.renderUser)}
         </div>
-        <Chat />
         <Piano />
-      </div>
+        <span style={{padding: '0.5em', borderRadius: 3, background: 'black', color: 'white'}}>{room.name}</span>
+        </div>
+        <div id="chat-container">
+          <Chat />
+        </div>
+     </>
     )
   }
 }

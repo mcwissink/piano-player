@@ -1,13 +1,14 @@
 import React from 'react';
 import io from 'socket.io-client';
 import update from 'immutability-helper';
-import { Switch, Route, RouteComponentProps } from 'react-router-dom';
+import { Switch, Route, RouteComponentProps, Link } from 'react-router-dom';
 import './App.css';
 
 import RoomList from './components/RoomList';
-import Settings from './components/UserSettings';
+import UserSettings from './components/UserSettings';
 import Room from './components/Room';
 import { calculateBlurByImageSize } from './util/calculateBackgroundBlurFromImage';
+import RoomSettings from './components/RoomSettings';
 
 export interface IChat {
   user: IUser;
@@ -107,7 +108,7 @@ class App extends React.PureComponent<{}, IAppState> {
 
   
   routeRoom = ({ match }: RouteComponentProps<{ id: string }>) => <Room id={match.params.id} />;
-  
+  routeCreateRoom = () => <RoomSettings />;
   render() {
     return (
       <AppContext.Provider value={{
@@ -115,17 +116,19 @@ class App extends React.PureComponent<{}, IAppState> {
         modifier: this.modifier,
         ...this.state,
       }}>
+        <UserSettings />
         <div id="piano-page-background" style={{ backgroundImage: `url(${this.state.theme.image})`, MozBackgroundSize: 'cover', filter: `blur(${ calculateBlurByImageSize(this.state.theme.image) }px)` }} />
         <div id="content">
-          <div><h1 id="header-logo-text" style={{textShadow: `rgba(0, 0, 0, 0.86) 0px 0px 5px, 4px 4px 1px ${this.state.theme.primary}`}}>Pianooooooo</h1></div>
+          <div><Link to="/" style={{textDecoration: 'none'}}><h1 id="header-logo-text" style={{textShadow: `rgba(0, 0, 0, 0.86) 0px 0px 5px, 4px 4px 1px ${this.state.theme.primary}`}}>Pianooooooo</h1></Link></div>
           <div />
           <div />
           <div id="sidebar-container">
-            <Settings />
+            <div><Link style={{backgroundColor: this.state.theme.primary}} className="button" to={'/'}>New Room</Link></div>
             <RoomList />
           </div>
           <Switch>
             <Route path="/room/:id" component={this.routeRoom} />
+            <Route path="/" exact={true} component={this.routeCreateRoom} />
           </Switch>
         </div>
       </AppContext.Provider>

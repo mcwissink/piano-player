@@ -40,7 +40,7 @@ class RoomList extends React.PureComponent<IProps, IRoomState> {
         </div>
       </Link>
       <Link to={`/room/${room.id}`} style={{textDecoration: 'none'}}>
-        <div style={{display: 'flex', alignItems: 'center', flexDirection: 'column'}}>
+        <div style={{display: 'flex', flexDirection: 'column'}}>
           <h4 className="room-list-item-room-name">{room.name.substr(0, 30)}</h4>
           <span className="room-list-item-metadata">{room.owner} {room.likes} {room.users}</span>
         </div>
@@ -57,7 +57,6 @@ class RoomList extends React.PureComponent<IProps, IRoomState> {
       <div>
         <h2>Rooms</h2>
         {rooms.map(r => this.renderRoomItem(r))}
-        <RoomSettings />
       </div>
     )
   }

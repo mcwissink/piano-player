@@ -16,7 +16,7 @@ const initialState = {
 };
 
 type IProps = {} & IAppContext & RouteComponentProps;
-class RoomList extends React.PureComponent<IProps, IRoomSettingsState> {
+class RoomSettings extends React.PureComponent<IProps, IRoomSettingsState> {
   socket: SocketIOClient.Socket;
   constructor(props: IProps) {
     super(props);
@@ -61,11 +61,23 @@ class RoomList extends React.PureComponent<IProps, IRoomSettingsState> {
 
   onPrimaryChange = (e: React.FormEvent<HTMLInputElement>) => {
     e.preventDefault();
+    const color_picker: HTMLInputElement | null = document.getElementById("color-picker-2") as HTMLInputElement;
+    const color_picker_wrapper = document.getElementById("color-picker-wrapper-2");
+    if (color_picker_wrapper !== null && color_picker !== null && color_picker.value !== null) {
+      color_picker_wrapper.style.backgroundColor = color_picker.value;
+      color_picker_wrapper.style.backgroundColor = color_picker.value;
+    }
     this.setState({ primary: e.currentTarget.value });
   }
 
   onSecondaryChange = (e: React.FormEvent<HTMLInputElement>) => {
     e.preventDefault();
+    const color_picker: HTMLInputElement | null = document.getElementById("color-picker-3") as HTMLInputElement;
+    const color_picker_wrapper = document.getElementById("color-picker-wrapper-3");
+    if (color_picker_wrapper !== null && color_picker !== null && color_picker.value !== null) {
+      color_picker_wrapper.style.backgroundColor = color_picker.value;
+      color_picker_wrapper.style.backgroundColor = color_picker.value;
+    }
     this.setState({ secondary: e.currentTarget.value });
   }
   onImageChange = (e: React.FormEvent<HTMLInputElement>) => {
@@ -93,11 +105,17 @@ class RoomList extends React.PureComponent<IProps, IRoomSettingsState> {
     } = this.state;
     return (
       <div>
+        <h1>New Room</h1>
         <form onSubmit={this.onRoomSubmit}>
-          <input type="text" value={name} onChange={this.onNameChange} />
-          <input type="color" value={primary} onChange={this.onPrimaryChange} />
-          <input type="color" value={secondary} onChange={this.onSecondaryChange} />
-          <input type="text" value={image} onChange={this.onImageChange} />
+          <input type="text" value={name} placeholder="Room Name" onChange={this.onNameChange} />
+          <div id="color-picker-wrapper-2">
+              <input id="color-picker-2" type="color" value={primary} onChange={this.onPrimaryChange} />
+            </div>
+            <div id="color-picker-wrapper-3">
+              <input id="color-picker-3" type="color" value={secondary} onChange={this.onSecondaryChange} />
+            </div>
+            <input type="text" value={image} placeholder="Paste background image" onChange={this.onImageChange} />
+
           <Button type="submit" value="Create Room" disabled={!this.canSubmit()} />
         </form>
       </div>
@@ -105,4 +123,4 @@ class RoomList extends React.PureComponent<IProps, IRoomSettingsState> {
   }
 }
 
-export default withRouter(withContext(RoomList));
+export default withRouter(withContext(RoomSettings));
