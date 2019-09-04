@@ -27,6 +27,7 @@ class Settings extends React.PureComponent<IProps, ISettingsState> {
     e.preventDefault();
     const {
       color,
+      modifier,
     } = this.props;
     const {
       name
@@ -34,7 +35,7 @@ class Settings extends React.PureComponent<IProps, ISettingsState> {
     this.socket.emit('settings', {
       name,
       color,
-    });
+    }, modifier.onUserChange);
     this.setState({ name: '', askUsername: undefined });
   }
 

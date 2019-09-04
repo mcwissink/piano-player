@@ -83,6 +83,7 @@ class Room extends React.PureComponent<IProps, IRoomState> {
         </div>
         {room.permissions.admin ? <RoomSettings roomName={room.name} /> : null}
         <Chat />
+        <Piano />
       </div>
       </>
     )
