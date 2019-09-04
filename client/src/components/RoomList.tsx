@@ -19,7 +19,7 @@ class RoomList extends React.PureComponent<IProps, IRoomState> {
 
   renderRoomItem = (room: IRoomListItem) => {
     return (
-      <div key={room.id} style={{display: 'flex', alignItems: 'center'}}>
+      <div key={room.id} style={{display: 'flex', alignItems: 'center', marginBottom: '0.5em'}}>
         <Link to={`/room/${encodeURIComponent(room.id)}`}>
       <div className="icon-container">
         <div className="icon-outer">

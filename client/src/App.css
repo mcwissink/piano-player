@@ -6,11 +6,6 @@ html, body, #root, #piano-page-background {
   background: #171717;
 }
 
-#header {
-  grid-column: col1-start / col3-start;
-  grid-row: row1-start ;
-}
-
 #header-logo-text {
   font-weight: 900;
   color: white;
@@ -55,7 +50,7 @@ html, body, #root, #piano-page-background {
     filter: none;
 }
 
-
+/* Grid */
 #content {
   display: grid;
   grid-gap: 10px;
@@ -72,6 +67,28 @@ html, body, #root, #piano-page-background {
   margin-right: 20px;
   height: 100%;
 }
+
+
+#header {
+  grid-column: col1-start / col1-start;
+  grid-row: row1-start ;
+}
+
+#roomlist-container {
+  grid-column: col1-start;
+  grid-row: row2-start ;
+}
+
+#main-container {
+  grid-column: col2-start ;
+  grid-row: row1-start / row2-end ;
+}
+
+#chat-container {
+  grid-column: col3-start ;
+  grid-row: row1-start / row2-end;
+}
+
 
 #sidebar-container {
   display: flex;
@@ -298,20 +315,4 @@ input:not([type='color']) {
   to {
       transform: rotate(360deg);
   }
-}
-
-
-#chat-container {
-  grid-column: col3-start ;
-  grid-row: row1-start / row2-end;
-}
-
-#main-container {
-  grid-column: col2-start ;
-  grid-row: row2-start ;
-}
-
-#roomlist-container {
-  grid-column: col1-start;
-  grid-row: row2-start ;
 }

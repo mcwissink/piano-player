@@ -11,6 +11,7 @@ interface IChatState {
 }
 
 type IProps = IChatProps & IAppContext;
+
 class Chat extends React.PureComponent<IProps, IChatState> {
   socket: SocketIOClient.Socket;
   constructor(props: IProps) {
@@ -20,7 +21,22 @@ class Chat extends React.PureComponent<IProps, IChatState> {
       message: '',
     };
   }
-
+  
+  componentDidMount() {
+    // Scrolly the bar to the bottom on an interval.
+    // https://stackoverflow.com/a/21067431/2930176
+    const out = document.getElementById("scrolly");
+    if (out !== null) {
+      setInterval(function() {
+        // allow 1px inaccuracy by adding 1
+        const isScrolledToBottom = out.scrollHeight - out.clientHeight <= out.scrollTop + 1
+        // scroll to bottom if isScrolledToBottom is true
+        if (!isScrolledToBottom) {
+          out.scrollTop = out.scrollHeight - out.clientHeight
+        }
+      }, 500);
+    }
+  }
   
   onMessageSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -34,6 +50,7 @@ class Chat extends React.PureComponent<IProps, IChatState> {
       message
     });
     this.setState({ message: '' });
+
   };
 
   onMessageChange = (e: React.FormEvent<HTMLInputElement>) => {
@@ -77,9 +94,9 @@ class Chat extends React.PureComponent<IProps, IChatState> {
     } = this.state;
     return (
       <div id="chat-container" style={{display: 'flex', flex: 1, overflow: 'auto', flexDirection: 'column'}}>
-      <div style={{display: 'flex', flex: 1, overflow: 'auto', flexDirection: 'column', justifyContent: 'flex-end'}}>
-        {/* Making scrolling work with flexbox https://stackoverflow.com/a/21541021/2930176 */}
-        <div style={{display: 'flex', minHeight: 'min-content', alignItems: 'flex-end', flexDirection: 'column'}}>
+      <div id="scrolly" style={{display: 'flex', flex: 1, overflow: 'auto', flexDirection: 'column'}}>
+        {/* Making scrolling work with flexbox, flexbox spec author, "this is a bug."  https://stackoverflow.com/a/21541021/2930176 */}
+        <div style={{display: 'flex', minHeight: 'min-content', alignItems: 'flex-end', flexDirection: 'column', marginTop: 'auto'}}>
           {room.chat.map((c, i) => this.renderChatMessage(c, i))}
         </div>
         </div>
