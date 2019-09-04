@@ -1,14 +1,14 @@
 import React from 'react';
 import io from 'socket.io-client';
 import update from 'immutability-helper';
-import { Switch, Route, withRouter, RouteComponentProps } from 'react-router-dom';
+import { Switch, Route, RouteComponentProps, withRouter, Router, BrowserRouter } from 'react-router-dom';
 import './App.css';
 
 import RoomList from './components/RoomList';
 import UserSettings from './components/UserSettings';
 import Room from './components/Room';
-import { calculateBlurByImageSize } from './util/calculateBackgroundBlurFromImage';
 import RoomSettings from './components/RoomSettings';
+import { createBrowserHistory } from "history";
 
 export interface IChat {
   user: IUser;
@@ -142,7 +142,7 @@ class App extends React.PureComponent<RouteComponentProps, IAppState> {
       </AppContext.Provider>
     );
   }
-}
+};
 
 // Probably reimplementing redux in a worse way, but as long as there are no performance hits, it's ok
 class AppModifier {
@@ -247,4 +247,16 @@ export function withContext<P extends object>(WrappedComponent: React.ComponentT
   }
 }
 
-export default withRouter(App);
+
+const customHistory = createBrowserHistory();
+const AppWithRouter = withRouter(App);
+const AppWithRouterComponent = React.memo((Thingy) => {
+  return <AppWithRouter />;
+});
+export default () => (
+  <Router history={customHistory}>
+    <BrowserRouter>
+      <AppWithRouterComponent />
+    </BrowserRouter>
+  </Router>
+);

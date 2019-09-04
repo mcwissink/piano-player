@@ -2,7 +2,6 @@ import React from "react";
 import { IUser, IRoom, IAppContext, withContext } from '../App';
 import { withRouter, RouteComponentProps } from 'react-router-dom';
 import RoomSettings from './RoomSettings';
-import Piano from './Piano';
 import Chat from './Chat';
 
 interface IRoomProps {
