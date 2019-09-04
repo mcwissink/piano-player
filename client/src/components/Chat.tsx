@@ -61,7 +61,7 @@ class Chat extends React.PureComponent<IProps, IChatState> {
       return null;
     })();
     return (
-      <div key={i} style={{background: 'black', color: 'white', padding: '0.25em', borderRadius: 3}}>
+      <div key={i} style={{background: '#000000d6', color: 'white', padding: '1em', marginBottom: '0.5em', borderRadius: 6, display: 'inline-block'}}>
         <span><span style={{ color: chat.user.color }}>{chat.user.name}</span>: {chat.message}</span>
         {actionButton}
       </div>
@@ -76,11 +76,16 @@ class Chat extends React.PureComponent<IProps, IChatState> {
       message,
     } = this.state;
     return (
-      <div>
-        {room.chat.map((c, i) => this.renderChatMessage(c, i))}
+      <div id="chat-container" style={{display: 'flex', flex: 1, overflow: 'auto', flexDirection: 'column'}}>
+      <div style={{display: 'flex', flex: 1, overflow: 'auto', flexDirection: 'column', justifyContent: 'flex-end'}}>
+        {/* Making scrolling work with flexbox https://stackoverflow.com/a/21541021/2930176 */}
+        <div style={{display: 'flex', minHeight: 'min-content', alignItems: 'flex-end', flexDirection: 'column'}}>
+          {room.chat.map((c, i) => this.renderChatMessage(c, i))}
+        </div>
+        </div>
         <form onSubmit={this.onMessageSubmit}>
           <input placeholder="Send a message" style={{marginRight: '1em'}} type="text" value={message} onChange={this.onMessageChange} />
-          <Button type="submit" value="Send" />
+          <Button style={{backgroundColor: this.props.theme.primary}} type="submit" value="Send" />
         </form>
       </div>
     )

@@ -3,6 +3,7 @@ import { IUser, IRoom, IAppContext, withContext } from '../App';
 import { withRouter, RouteComponentProps } from 'react-router-dom';
 import RoomSettings from './RoomSettings';
 import Chat from './Chat';
+import Piano from "./Piano";
 
 interface IRoomProps {
   id: string;
@@ -73,17 +74,17 @@ class Room extends React.PureComponent<IProps, IRoomState> {
     }
     return (
       <>
-      <div>
+      <div id="main-container">
         <button onClick={() => history.push('/')}>Leave Room</button>
         <div>Room: {room.name}</div>
-        <div>Players</div>
+        {/* <div>Players</div>
         <div>
           {room.players.map(this.renderUser)}
-        </div>
-        {room.permissions.admin ? <RoomSettings roomName={room.name} /> : null}
-        <Chat />
+        </div> */}
         <Piano />
+        {room.permissions.admin ? <RoomSettings roomName={room.name} /> : null}
       </div>
+        <Chat />
       </>
     )
   }

@@ -6,6 +6,11 @@ html, body, #root, #piano-page-background {
   background: #171717;
 }
 
+#header {
+  grid-column: col1-start / col3-start;
+  grid-row: row1-start ;
+}
+
 #header-logo-text {
   font-weight: 900;
   color: white;
@@ -34,12 +39,13 @@ html, body, #root, #piano-page-background {
 }
 
 #piano-page-background-2 {
+  background-color: #0000008a;
   -webkit-mask: -webkit-linear-gradient(0.25turn, black, transparent 30%, black);
   -webkit-mask: linear-gradient(0.5turn, black, transparent 30%, black);
   -webkit-filter: blur(3px);
   mask: url('./img/filters.svg#mask-linear');
   filter: url('./img/filters.svg#filtre2');
-
+  mask-type: luminance;
 }
 
 #piano-page-background-2:hover {
@@ -52,8 +58,11 @@ html, body, #root, #piano-page-background {
 
 #content {
   display: grid;
-  grid-template-columns: minmax(200px, 1fr) 2fr 0.8fr;
-  grid-auto-rows: 70px auto;
+  grid-gap: 10px;
+  grid-template-columns: [col1-start] 1fr [col2-start] 1fr [col3-start] 1fr [col3-end];
+  /* grid-template-columns: minmax(200px, 1fr) 2fr 0.8fr; */
+  /* grid-auto-rows: 70px 1fr; */
+  grid-template-rows: [row1-start] 70px [row2-start] 1fr [row2-end];
   grid-gap: 10px;
   position: fixed;
   left: 0;
@@ -289,4 +298,20 @@ input:not([type='color']) {
   to {
       transform: rotate(360deg);
   }
+}
+
+
+#chat-container {
+  grid-column: col3-start ;
+  grid-row: row1-start / row2-end;
+}
+
+#main-container {
+  grid-column: col2-start ;
+  grid-row: row2-start ;
+}
+
+#roomlist-container {
+  grid-column: col1-start;
+  grid-row: row2-start ;
 }

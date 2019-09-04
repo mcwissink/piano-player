@@ -125,43 +125,18 @@ class App extends React.PureComponent<RouteComponentProps, IAppState> {
         modifier: this.modifier,
         ...this.state,
       }}>
-        <svg height="0">
-<defs>
-  <mask id="mask-radial">
-    <rect width="400" height="300" fill="url(#g1)"></rect>
-    <radialGradient id="g1" cx="50%" cy="50%" r="50%">
-      <stop stop-color="black" offset="50%"/>
-      <stop stop-color="white" offset="110%"/>
-    </radialGradient>
-  </mask>
-  <mask id="mask-linear">
-    <rect width="400" height="300" fill="url(#l1)"></rect>
-    <linearGradient id="l1" x1="0" y1="0" x2="0" y2="1">
-      <stop stop-color="white" offset="0%"/>
-      <stop stop-color="black" offset="30%"/>
-      <stop stop-color="white" offset="100%"/>
-    </linearGradient>
-  </mask>
-  <filter id="filtre1">
-    <feGaussianBlur in="SourceGraphic" stdDeviation="5"/>
-  </filter>
-  <filter id="filtre2">
-    <feGaussianBlur in="SourceGraphic" stdDeviation="3"/>
-  </filter>
-</defs>
-</svg>
         <div id="piano-page-background-mask">
           <div id="piano-page-background" style={{ backgroundImage: `url(${this.state.theme.image})`}} />
-          <div id="piano-page-background-2" style={{ 
-            backgroundImage: `url(${this.state.theme.image})`,
-            }} />
+          <div id="piano-page-background-2" />
         </div>
         <div id="content">
-          <h1>Pianooo</h1>
+          <div id="header">
+            <h1>Pianooo</h1>
+          </div>
           {this.modifier.noRoom() ? <UserSettings /> : null}
           <div />
           <div />
-          <div>
+          <div id="roomlist-container">
             <RoomList />
           </div>
           <Switch>
