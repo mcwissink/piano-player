@@ -1,7 +1,6 @@
 import React from "react";
 import { Link, withRouter, RouteComponentProps } from 'react-router-dom';
 import { IAppContext, withContext, IRoomListItem } from '../App';
-import RoomSettings from './RoomSettings';
 
 interface IRoomProps {
 
