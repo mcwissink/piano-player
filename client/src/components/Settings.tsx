@@ -20,6 +20,7 @@ class Settings extends React.PureComponent<IProps, ISettingsState> {
     };
   }
 
+
   onSettingsSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const {

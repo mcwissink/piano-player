@@ -45,6 +45,7 @@ class RoomSettings extends React.PureComponent<IProps, IRoomSettingsState> {
     const parsedName = name.trim();
     if (this.canSubmit()) {
       if (this.props.roomName === undefined) {
+        console.log('creating a room');
         this.socket.emit('createRoom', {
           name: parsedName,
           theme,
