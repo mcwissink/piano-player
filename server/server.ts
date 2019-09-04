@@ -222,7 +222,8 @@ io.on('connection', socket => {
   socket.on('settings', (e, callback) => {
     user.name = e.name === '' ? user.name : e.name;
     user.color = e.color;
-    callback(user.getSharedData());
+    // next line was causing the issue: TypeError: callback is not a function
+    // callback(user.getSharedData());
   });
 
   socket.on('createRoom', (e, callback) => {

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="100%" height="100%" baseProfile="full">
+  <defs>
+  <mask id="mask-radial">
+    <rect width="400" height="300" fill="url(#g1)"></rect>
+    <radialGradient id="g1" cx="50%" cy="50%" r="50%">
+      <stop stop-color="black" offset="50%"/>
+      <stop stop-color="white" offset="110%"/>
+    </radialGradient>
+  </mask>
+  <mask id="mask-linear"  maskUnits="objectBoundingBox" maskContentUnits="objectBoundingBox" >
+    <rect width="3px" height="1px" fill="url(#l1)"></rect>
+    <linearGradient id="l1" x1="0" y1="1" x2="1" y2="1">
+      <stop stop-color="white" offset="0%"/>
+      <stop stop-color="black" offset="30%"/>
+      <stop stop-color="white" offset="100%"/>
+    </linearGradient>
+  </mask>
+  <filter id="filtre1">
+    <feGaussianBlur in="SourceGraphic" stdDeviation="5"/>
+  </filter>
+  <filter id="filtre2">
+    <feGaussianBlur in="SourceGraphic" stdDeviation="3"/>
+  </filter>
+  </defs>
+</svg>

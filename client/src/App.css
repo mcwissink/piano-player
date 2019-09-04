@@ -12,19 +12,43 @@ html, body, #root, #piano-page-background {
   letter-spacing: 0.1em;
 }
 
-#piano-page-background {
+#piano-page-background-mask {
   /* Can't use shorthand for background property values b/c styles compete with the custom bg image */
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-position-x: center;
-  background-position-y: center;
-  background-attachment: fixed;
   position: fixed;
   left: 0;
   right: 0;
   z-index: 1;
   transform: scale(1.1);
+  height: 100%;
 }
+
+#piano-page-background-mask > div {
+  position: absolute;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position-x: center;
+  background-position-y: center;
+  background-attachment: fixed;
+  height: 100%;
+  width: 100%;
+}
+
+#piano-page-background-2 {
+  -webkit-mask: -webkit-linear-gradient(0.25turn, black, transparent 30%, black);
+  -webkit-mask: linear-gradient(0.5turn, black, transparent 30%, black);
+  -webkit-filter: blur(3px);
+  mask: url('./img/filters.svg#mask-linear');
+  filter: url('./img/filters.svg#filtre2');
+
+}
+
+#piano-page-background-2:hover {
+    -webkit-mask: none;
+    -webkit-filter: none;
+    mask: none;
+    filter: none;
+}
+
 
 #content {
   display: grid;
