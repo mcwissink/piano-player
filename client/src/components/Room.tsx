@@ -74,16 +74,18 @@ class Room extends React.PureComponent<IProps, IRoomState> {
     }
     return (
       <>
-      <div id="main-container">
-        <button onClick={() => history.push('/')}>Leave Room</button>
-        <div>Room: {room.name}</div>
-        {/* <div>Players</div>
-        <div>
-          {room.players.map(this.renderUser)}
-        </div> */}
-        <Piano />
-        {room.permissions.admin ? <RoomSettings roomName={room.name} /> : null}
-      </div>
+        <div id="main-container">
+          <button onClick={() => history.push('/')}>Leave Room</button>
+          <div>Room: {room.name}</div>
+          <div>Players</div>
+          <div>
+            {room.players.map(this.renderUser)}
+          </div> 
+          <div style={{ height: '70%' }}>
+            <Piano />
+          </div>
+          {room.permissions.admin ? <RoomSettings roomName={room.name} /> : null}
+        </div>
         <Chat />
       </>
     )

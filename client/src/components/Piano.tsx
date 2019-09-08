@@ -94,7 +94,7 @@ class DrawPiano {
     // Draw the white keys first
     let whiteNotePosition = 0;
     for (let i = 0; i < 88; i++) {
-      const note = activeNotes[i + 21][0];
+      const note = activeNotes[i + 21];
       const keyInOctave = i % 12;
       if (this.WHITE_KEYS.indexOf(keyInOctave) !== -1) {
         const x = whiteNotePosition * this.keyWidth;
@@ -103,7 +103,7 @@ class DrawPiano {
         // Handle drawing the notes
         if (note !== undefined) {
           if (this.activeDrawNotes[i] === undefined) {
-            this.activeDrawNotes[i] = new DrawNote(this.canvas, this.ctx, x, this.topOfPiano, this.keyWidth, 1, note.color);
+            this.activeDrawNotes[i] = new DrawNote(this.canvas, this.ctx, x, this.topOfPiano, this.keyWidth, 1, '#ff0000');
           } else {
             this.activeDrawNotes[i].height++;
           }
@@ -118,7 +118,7 @@ class DrawPiano {
     // Draw the black keys next
     let blackNotePosition = 0;
     for (let i = 0; i < 88; i++) {
-      const note = activeNotes[i + 21][0];
+      const note = activeNotes[i + 21];
       const keyInOctave = i % 12;
       if (this.BLACK_KEYS.indexOf(keyInOctave) !== -1) {
         const x = (blackNotePosition * this.keyWidth) + (this.keyWidth/2)
@@ -128,7 +128,7 @@ class DrawPiano {
         if (note !== undefined) {
           if (this.activeDrawNotes[i] === undefined) {
             // No active note so create one
-            this.activeDrawNotes[i] = new DrawNote(this.canvas, this.ctx, x, this.topOfPiano, this.keyWidth * 0.8, 1, note.color);
+            this.activeDrawNotes[i] = new DrawNote(this.canvas, this.ctx, x, this.topOfPiano, this.keyWidth * 0.8, 1, '#ff0000');
           } else {
             // update the active note
             this.activeDrawNotes[i].height++;
@@ -145,7 +145,7 @@ class DrawPiano {
   }
 
   drawBlackKey(x: number, y: number, note: INoteonEvent) {
-    const fillColor = note !== undefined ? note.color : this.theme.secondary;
+    const fillColor = note !== undefined ? '#ff0000' : this.theme.secondary;
     this.ctx.fillStyle = fillColor; 
     this.ctx.strokeStyle = this.theme.primary;
     this.ctx.fillRect(x, y, this.keyWidth * 0.8, this.keyHeight * 0.65);
@@ -153,7 +153,7 @@ class DrawPiano {
   }
 
   drawWhiteKey(x: number, y: number, note: INoteonEvent) {
-    const fillColor = note !== undefined ? note.color : this.theme.primary;
+    const fillColor = note !== undefined ? '#ff0000' : this.theme.primary;
     this.ctx.fillStyle = fillColor;
     this.ctx.strokeStyle = this.theme.secondary;
     this.ctx.fillRect(x, y, this.keyWidth, this.keyHeight);
@@ -200,6 +200,9 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
     if (ctx === null) {
       return;
     }
+    const resizeCanvas = this.resizeCanvas(canvas);
+    window.addEventListener('resize', resizeCanvas, false);
+    resizeCanvas();
     this.graphics = new DrawPiano(canvas, ctx, this.props.theme);
     this.update();
   }
@@ -217,13 +220,31 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
   }
 
   handleDeviceUpdate = (devices: WebMidi.Input[]) => {
-    this.setState({ devices: devices.map(device => device.name) });
+    const device = (() => {
+      if (devices.length > 0) {
+        const deviceName = devices[0].name;
+        this.midi.connect(deviceName);
+        return deviceName;
+      } else {
+        return '';
+      }
+    })();
+    this.setState({ devices: devices.map(device => device.name), device });
   }
 
   handleDeviceSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const device = e.target.value; 
     this.midi.connect(device);
     this.setState({ device });
+  }
+
+  resizeCanvas = (canvas: HTMLCanvasElement) => () => {
+    // Make it visually fill the positioned parent
+    canvas.style.width ='100%';
+    canvas.style.height ='100%';
+    // ...then set the internal size to match
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
   }
 
   render() {
@@ -235,7 +256,7 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
       room,
     } = this.props;
     return (
-      <div>
+      <>
         <canvas ref={this.setup} />
         {room.permissions.admin ? (
           <div>
@@ -245,7 +266,7 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
             </select>
           </div>
         ) : null}
-      </div>
+      </>
     )
   }
 }

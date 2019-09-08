@@ -19,7 +19,7 @@ class Settings extends React.PureComponent<IProps, ISettingsState> {
     this.socket = props.socket;
     this.state = {
       name: '',
-      askUsername: true,
+      //askUsername: true,
     };
   }
 

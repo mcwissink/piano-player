@@ -76,6 +76,7 @@ class RoomManager {
     for (const id of room.users.values()) {
       const user = users.get(id);
       if (user !== undefined) {
+        console.log(room.theme);
         user.socket.emit('roomUpdate', this.getRoomData(room, user));
       }
     }
@@ -174,11 +175,12 @@ class RoomManager {
 
   updateRoom(user: User, theme: ITheme) {
     this.hasPermission(user, 'admin', room => {
-      this.rooms.set(room.name, {
+      const updatedRoom = {
         ...room,
         theme,
-      });
-      this.emitRoomUpdate(room);
+      }
+      this.rooms.set(room.name, updatedRoom);
+      this.emitRoomUpdate(updatedRoom);
     });
   }
 
@@ -248,7 +250,7 @@ io.on('connection', socket => {
 
   socket.on('noteon', e => {
     roomManager.hasPermission(user, 'play', room => {
-      socket.to(user.roomId).broadcast.emit('noteon', {
+      socket.to(user.roomId).emit('noteon', {
         ...e,
         id: user.getId(),
         color: user.color,
@@ -258,13 +260,22 @@ io.on('connection', socket => {
 
   socket.on('noteoff', e => {
     roomManager.hasPermission(user, 'play', room => {
-      socket.to(user.roomId).broadcast.emit('noteoff', {
+      socket.to(user.roomId).emit('noteoff', {
         ...e,
         id: user.getId(),
       });
     });
   });
 
+  socket.on('controlchange', e => {
+    roomManager.hasPermission(user, 'play', room => {
+      socket.to(user.roomId).emit('controlchange', {
+        ...e,
+        id: user.getId(),
+      });
+    });
+  });
+  
   socket.on('chat', e => {
     io.to(user.roomId).emit('chat', {
       ...e,

@@ -4,7 +4,6 @@ import { withRouter, RouteComponentProps } from 'react-router-dom';
 import { ITheme, IAppContext, withContext } from '../App';
 import Button from "./Button";
 
-
 interface IRoomSettingsState {
   name: string;
   theme: ITheme;
@@ -34,7 +33,7 @@ class RoomSettings extends React.PureComponent<IProps, IRoomSettingsState> {
     const {
       name,
     } = this.state;
-    return this.props.roomName === undefined ? (name !== '' && this.props.rooms.find(room => room.name === name) === undefined) : true;
+    return this.props.modifier.noRoom() ? (name !== '' && this.props.rooms.find(room => room.name === name) === undefined) : true;
   }
 
   onRoomSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -45,8 +44,7 @@ class RoomSettings extends React.PureComponent<IProps, IRoomSettingsState> {
     } = this.state;
     const parsedName = name.trim();
     if (this.canSubmit()) {
-      if (this.props.roomName === undefined) {
-        console.log('creating a room');
+      if (this.props.modifier.noRoom()) {
         this.socket.emit('createRoom', {
           name: parsedName,
           theme,
@@ -71,15 +69,6 @@ class RoomSettings extends React.PureComponent<IProps, IRoomSettingsState> {
 
   onPrimaryChange = (e: React.FormEvent<HTMLInputElement>) => {
     e.preventDefault();
-        // Find a way to make this more React-like.
-    // This is a work around to get a better styling on the color picker without using unofficial CSS selectors
-    // Copy from https://stackoverflow.com/a/11471224/2930176
-    const color_picker: HTMLInputElement | null = document.getElementById("color-picker-2") as HTMLInputElement;
-    const color_picker_wrapper = document.getElementById("color-picker-wrapper-2");
-    if (color_picker_wrapper !== null && color_picker !== null && color_picker.value !== null) {
-      color_picker_wrapper.style.backgroundColor = color_picker.value;
-      color_picker_wrapper.style.backgroundColor = color_picker.value;
-    }
     const color = e.currentTarget.value;
     this.setState(oldState => update(oldState, {
       theme: {
@@ -90,15 +79,6 @@ class RoomSettings extends React.PureComponent<IProps, IRoomSettingsState> {
 
   onSecondaryChange = (e: React.FormEvent<HTMLInputElement>) => {
     e.preventDefault();
-        // Find a way to make this more React-like.
-    // This is a work around to get a better styling on the color picker without using unofficial CSS selectors
-    // Copy from https://stackoverflow.com/a/11471224/2930176
-    const color_picker: HTMLInputElement | null = document.getElementById("color-picker-3") as HTMLInputElement;
-    const color_picker_wrapper = document.getElementById("color-picker-wrapper-3");
-    if (color_picker_wrapper !== null && color_picker !== null && color_picker.value !== null) {
-      color_picker_wrapper.style.backgroundColor = color_picker.value;
-      color_picker_wrapper.style.backgroundColor = color_picker.value;
-    }
     const color = e.currentTarget.value;
     this.setState(oldState => update(oldState, {
       theme: {
@@ -106,6 +86,7 @@ class RoomSettings extends React.PureComponent<IProps, IRoomSettingsState> {
       },
     }));
   }
+
   onImageChange = (e: React.FormEvent<HTMLInputElement>) => {
     e.preventDefault();
     const color = e.currentTarget.value;
@@ -121,20 +102,20 @@ class RoomSettings extends React.PureComponent<IProps, IRoomSettingsState> {
       name,
       theme,
     } = this.state;
-    const hasRoom = this.props.roomName !== undefined;
+    const noRoom = this.props.modifier.noRoom();
     return (
       <div>
-        <h1>New Room</h1>
+        {noRoom ? <h1>New Room</h1> : null}
         <form onSubmit={this.onRoomSubmit}>
-          {hasRoom ? null : <input placeholder="New Room Name" type="text" value={name} onChange={this.onNameChange} />}
-          <div id="color-picker-wrapper-2" style={{backgroundColor: this.props.theme.primary, marginRight: '1em'}}>
+          {noRoom ? <input placeholder="New Room Name" type="text" value={name} onChange={this.onNameChange} /> : null}
+          <div id="color-picker-wrapper-2" style={{backgroundColor: theme.primary, marginRight: '1em'}}>
             <input id="color-picker-2" type="color" value={theme.primary} onChange={this.onPrimaryChange} />
           </div>
-          <div id="color-picker-wrapper-3" style={{backgroundColor: this.props.theme.primary, marginRight: '1em'}}>
+          <div id="color-picker-wrapper-3" style={{backgroundColor: theme.secondary, marginRight: '1em'}}>
             <input id="color-picker-3" type="color" value={theme.secondary} onChange={this.onSecondaryChange} />
           </div>
           <input placeholder="Image URL" type="text" value={theme.image} onChange={this.onImageChange} />
-          <Button type="submit" value={`${hasRoom ? 'Update' : 'Create'} Room`} disabled={!this.canSubmit()} />
+          <Button type="submit" value={`${noRoom ? 'Create' : 'Update'} Room`} disabled={!this.canSubmit()} />
         </form>
       </div>
     )

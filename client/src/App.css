@@ -54,7 +54,7 @@ html, body, #root, #piano-page-background {
 #content {
   display: grid;
   grid-gap: 10px;
-  grid-template-columns: [col1-start] 1fr [col2-start] 1fr [col3-start] 1fr [col3-end];
+  grid-template-columns: [col1-start] 1fr [col2-start] 2fr [col3-start] 1fr [col3-end];
   /* grid-template-columns: minmax(200px, 1fr) 2fr 0.8fr; */
   /* grid-auto-rows: 70px 1fr; */
   grid-template-rows: [row1-start] 70px [row2-start] 1fr [row2-end];

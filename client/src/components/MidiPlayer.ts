@@ -1,39 +1,35 @@
 import Soundfont from "soundfont-player"
 import * as WebMidi from "webmidi";
-import { Player } from "../../@types/soundfont-player";
-// Look into web audio font
-// https://www.npmjs.com/package/webaudiofont
-
 
 export default class MidiPlayer {
-  // soundfont: Soundfont.Player | null;
+  soundfont: Soundfont.Player | null;
   context = AudioContext;
-  activeNotes: {[note: string]: Soundfont.Player | undefined};
+  activeNotes: {[note: number]: Soundfont.Player | undefined};
   constructor() {
-    // this.soundfont = null;
+    this.soundfont = null;
     this.activeNotes = {};
     this.context = this.context;
-    // Soundfont.instrument(this.context, 'acoustic_grand_piano').then((player: any) => {
-    //   this.soundfont = player;
-    // });
+    Soundfont.instrument(new AudioContext(), 'acoustic_grand_piano').then((player: Soundfont.Player) => {
+      this.soundfont = player;
+    });
   }
 
   noteon(event: WebMidi.InputEventNoteon) {
-    // if (this.soundfont !== null) {
-    //   const note = this.activeNotes[event.note.name];
-    //   if (note !== undefined) {
-    //     note.stop();
-    //   }
-    //   this.activeNotes[event.note.name] = this.soundfont.play(event.note.number.toString());
-    // }
+    if (this.soundfont !== null) {
+      const note = this.activeNotes[event.note.number];
+      if (note !== undefined) {
+        note.stop();
+      }
+      this.activeNotes[event.note.number] = this.soundfont.play(event.note.number.toString());
+    }
   }
 
   noteoff(event: WebMidi.InputEventNoteoff) {
-    // if (this.soundfont !== null) {
-    //   const note = this.activeNotes[event.note.name];
-    //   if (note !== undefined) {
-    //     note.stop();
-    //   }
-    // }
+    if (this.soundfont !== null) {
+      const note = this.activeNotes[event.note.number];
+      if (note !== undefined) {
+        note.stop();
+      }
+    }
   }
 }

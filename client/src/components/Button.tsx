@@ -13,7 +13,7 @@ type IProps = IButtonProps & IAppContext & DetailedHTMLProps<InputHTMLAttributes
 class Button extends React.PureComponent<IProps, IButton> {
   render() {
     return (
-      <input {...this.props} style={{backgroundColor: this.props.theme.primary}} />
+      <input {...this.props} style={{backgroundColor: this.props.theme.primary, color: this.props.theme.secondary}} />
     );
   }
 }

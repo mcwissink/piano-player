@@ -82,7 +82,7 @@ const initialState = {
     players: [],
   },
   theme: {
-    primary: '#DD51DD',
+    primary: '#ffffff',
     secondary: '#000000',
     image: '',
   },
