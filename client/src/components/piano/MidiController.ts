@@ -38,7 +38,7 @@ export default class MidiController {
   sustainedNotes: SustainedNotes;
   userColor: string;
   sustain: boolean;
-  constructor(socket: SocketIOClient.Socket, userColor: string, deviceCallback: DeviceCallback) {
+  constructor(socket: SocketIOClient.Socket, userColor: string, instrument: string, deviceCallback: DeviceCallback) {
     this.midi = WebMidi.default;
     this.player = new MidiPlayer();
     this.input = null;
@@ -74,6 +74,10 @@ export default class MidiController {
       id: this.socket.id,
       event,
     }
+  }
+
+  setInstrument(instrument: string) {
+    this.player.loadSoundfont(instrument);
   }
 
   connect(name: string) {

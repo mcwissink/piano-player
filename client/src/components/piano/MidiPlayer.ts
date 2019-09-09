@@ -9,9 +9,16 @@ export default class MidiPlayer {
     this.soundfont = null;
     this.activeNotes = {};
     this.context = this.context;
-    Soundfont.instrument(new AudioContext(), 'acoustic_grand_piano').then((player: Soundfont.Player) => {
-      this.soundfont = player;
-    });
+    this.loadSoundfont('acoustic_grand_piano');
+  }
+
+  async loadSoundfont(instrument: string) {
+    try {
+      // The typings for Soundfont stink, how to fix
+      this.soundfont = await Soundfont.instrument(new AudioContext(), instrument as any);
+    } catch (e) {
+      console.log('failed');
+    }
   }
 
   noteon(event: WebMidi.InputEventNoteon) {
