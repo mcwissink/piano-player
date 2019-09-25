@@ -54,10 +54,10 @@ html, body, #root, #piano-page-background {
 #content {
   display: grid;
   grid-gap: 10px;
-  grid-template-columns: [col1-start] 1fr [col2-start] 2fr [col3-start] 1fr [col3-end];
+  grid-template-columns: 1fr 2fr 1fr;
   /* grid-template-columns: minmax(200px, 1fr) 2fr 0.8fr; */
   /* grid-auto-rows: 70px 1fr; */
-  grid-template-rows: [row1-start] 70px [row2-start] 1fr [row2-end];
+  grid-template-rows: 70px 1fr 20px;
   grid-gap: 10px;
   position: fixed;
   left: 0;
@@ -65,28 +65,34 @@ html, body, #root, #piano-page-background {
   z-index: 10;
   margin-left: 20px;
   margin-right: 20px;
+  margin-bottom: 20px;
   height: 100%;
 }
 
 
 #header {
-  grid-column: col1-start / col1-start;
-  grid-row: row1-start ;
+  grid-column: 1 / 1;
+  grid-row: 1 / 1;
 }
 
 #roomlist-container {
-  grid-column: col1-start;
-  grid-row: row2-start ;
+  grid-column: 1 / 1;
+  grid-row: 2 / 2;
 }
 
-#main-container {
-  grid-column: col2-start ;
-  grid-row: row1-start / row2-end ;
+#room {
+  grid-column: 2 / 2;
+  grid-row: 2 / 2;
+}
+
+#room-header {
+  grid-column: 2 / 2;
+  grid-row: 1 / 1;
 }
 
 #chat-container {
-  grid-column: col3-start ;
-  grid-row: row1-start / row2-end;
+  grid-column: 3 / 3;
+  grid-row: 2 / 2;
 }
 
 
@@ -119,7 +125,6 @@ html, body, #root, #piano-page-background {
 .room-list-item-container {
   display: flex;
   align-items: center;
-  margin-bottom: 1em;
 }
 
 .room-list-item-container > * {
@@ -195,7 +200,6 @@ input:not([type='color']) {
 #chat-container {
   display: flex;
   align-items: flex-end;
-  margin-bottom: 1em;
 }
 
 .button {

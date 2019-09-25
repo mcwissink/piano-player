@@ -106,7 +106,7 @@ class RoomSettings extends React.PureComponent<IProps, IRoomSettingsState> {
     return (
       <div>
         {noRoom ? <h1>New Room</h1> : null}
-        <form onSubmit={this.onRoomSubmit}>
+        <form onSubmit={this.onRoomSubmit} style={{ display: 'flex', alignItems: 'center' }}>
           {noRoom ? <input placeholder="New Room Name" type="text" value={name} onChange={this.onNameChange} /> : null}
           <div id="color-picker-wrapper-2" style={{backgroundColor: theme.primary, marginRight: '1em'}}>
             <input id="color-picker-2" type="color" value={theme.primary} onChange={this.onPrimaryChange} />
@@ -114,7 +114,7 @@ class RoomSettings extends React.PureComponent<IProps, IRoomSettingsState> {
           <div id="color-picker-wrapper-3" style={{backgroundColor: theme.secondary, marginRight: '1em'}}>
             <input id="color-picker-3" type="color" value={theme.secondary} onChange={this.onSecondaryChange} />
           </div>
-          <input placeholder="Image URL" type="text" value={theme.image} onChange={this.onImageChange} />
+          <input placeholder="Image URL" type="text" style={{ marginRight: '1em' }} value={theme.image} onChange={this.onImageChange} />
           <Button type="submit" value={`${noRoom ? 'Create' : 'Update'} Room`} disabled={!this.canSubmit()} />
         </form>
       </div>

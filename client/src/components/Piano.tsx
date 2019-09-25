@@ -110,7 +110,7 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
     } = this.props;
     return (
       <>
-        <canvas ref={this.setup} />
+        <canvas style={{ flexGrow: 1 }} ref={this.setup} />
         {room.permissions.admin ? (
           <div>
             <select value={device} onChange={this.handleDeviceSelect}>
