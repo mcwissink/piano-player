@@ -1,9 +1,9 @@
 import React from "react";
 import { IUser, IRoom, IAppContext, withContext } from '../App';
 import { withRouter, RouteComponentProps } from 'react-router-dom';
-import RoomSettings from './RoomSettings';
-import Chat from './Chat';
-import Piano from "./Piano";
+import RoomSettings from '../components/RoomSettings';
+import Chat from '../components/Chat';
+import Piano from "../components/Piano";
 
 interface IRoomProps {
   id: string;
@@ -13,14 +13,12 @@ interface IRoomState {
 }
 type IProps = IRoomProps & IAppContext & RouteComponentProps;
 class Room extends React.PureComponent<IProps, IRoomState> {
-  socket: SocketIOClient.Socket;
   constructor(props: IProps) {
     super(props);
-    this.socket = props.socket;
   }
 
   componentDidMount() {
-    this.socket.emit('joinRoom', {
+    this.props.socket.emit('joinRoom', {
       id: this.props.id,
     }, (room: IRoom|null) => {
       this.props.modifier.roomEvent(room);
@@ -33,7 +31,7 @@ class Room extends React.PureComponent<IProps, IRoomState> {
 
   componentDidUpdate(prevProps: IProps) {
     if (this.props.id !== prevProps.id) {
-      this.socket.emit('joinRoom', {
+      this.props.socket.emit('joinRoom', {
         id: this.props.id,
       }, (room: IRoom|null) => {
         this.props.modifier.roomEvent(room);
@@ -52,11 +50,12 @@ class Room extends React.PureComponent<IProps, IRoomState> {
     const {
       room,
       modifier,
+      socket,
     } = this.props;
     return (
       <span key={user.id} style={{ backgroundColor: user.color }}>
         {user.name}
-        {room.permissions.admin && user.id !== this.socket.id ? (
+        {room.permissions.admin && user.id !== socket.raw.id ? (
           <button onClick={modifier.onPermissionsUpdate(user.id, { admin: false, play: false})}>Remove Player</button>
         ) : null}
       </span>
@@ -67,7 +66,6 @@ class Room extends React.PureComponent<IProps, IRoomState> {
     const {
       room,
       modifier,
-      history,
     } = this.props;
     if (modifier.noRoom()){
       return <div>loading...</div>;

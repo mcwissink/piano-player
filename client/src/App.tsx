@@ -5,10 +5,12 @@ import { Switch, Route, RouteComponentProps, withRouter, Router, BrowserRouter }
 import './App.css';
 
 import RoomList from './components/RoomList';
-import UserSettings from './components/UserSettings';
-import Room from './components/Room';
-import RoomSettings from './components/RoomSettings';
 import { createBrowserHistory } from "history";
+
+import Room from './pages/Room';
+import Home from './pages/Home';
+
+import { Events as E } from '../../server/interfaces/IEvents';
 
 export interface IChat {
   user: IUser;
@@ -62,18 +64,18 @@ interface IAppState {
 }
 
 interface IAppPartialContext extends IAppState {
-  socket?: SocketIOClient.Socket; 
+  socket?: SafeSocket; 
   modifier?: AppModifier;
 }
 
 export interface IAppContext extends IAppPartialContext {
-  socket: SocketIOClient.Socket;
+  socket: SafeSocket;
   modifier: AppModifier;
 }
 
 const initialState = {
   rooms: [],
-  name: 'Anonymous',
+  name: '',
   color: "#000000".replace(/0/g, () => (~~(Math.random()*16)).toString(16)),
   room: {
     permissions: { admin: false, play: false },
@@ -89,19 +91,29 @@ const initialState = {
 }
 export const AppContext = React.createContext<IAppPartialContext>(initialState);
 
+export class SafeSocket {
+  constructor(public raw: SocketIOClient.Socket) {
+  }
+  emit<T, K>(event: string, data?: T, callback?: (data: K) => void) {
+    this.raw.emit(event, data, callback);
+  }
+  on<T>(event: string, callback: (data: T) => void) {
+    this.raw.on(event, callback);
+  }
+}
 class App extends React.PureComponent<RouteComponentProps, IAppState> {
   modifier: AppModifier;
-  socket: SocketIOClient.Socket;
+  socket: SafeSocket;
   constructor(props: RouteComponentProps) {
     super(props);
     this.state = initialState;
     this.modifier = new AppModifier(this);
     
-    this.socket = io('localhost:3001', {
+    this.socket = new SafeSocket(io('localhost:3001', {
       transports: ['websocket']
-    });
+    }));
     this.socket.on('reconnect_attempt', () => {
-      this.socket.io.opts.transports = ['polling', 'websocket'];
+      this.socket.raw.io.opts.transports = ['polling', 'websocket'];
     });
     this.socket.on('connect_error', () => console.log("error"));
     this.socket.on('connect', () => console.log("connected"));
@@ -112,12 +124,12 @@ class App extends React.PureComponent<RouteComponentProps, IAppState> {
     this.socket.emit('settings', {
       name: this.state.name,
       color: this.state.color,
-    }, this.modifier.onUserChange);
+    } as E.Settings);
   };
 
   
   routeRoom = ({ match }: RouteComponentProps<{ id: string }>) => <Room id={match.params.id} />;
-  routeCreateRoom = () => <RoomSettings />;
+  homePage = () => <Home/>;
   render() {
     return (
       <AppContext.Provider value={{
@@ -133,15 +145,12 @@ class App extends React.PureComponent<RouteComponentProps, IAppState> {
           <div id="header">
             <h1>Pianooo</h1>
           </div>
-          {this.modifier.noRoom() ? <UserSettings /> : null}
-          <div />
-          <div />
           <div id="roomlist-container">
             <RoomList />
           </div>
           <Switch>
             <Route path="/room/:id" component={this.routeRoom} />
-            <Route path="/" exact={true} component={this.routeCreateRoom} />
+            <Route path="/" exact={true} component={this.homePage} />
           </Switch>
         </div>
       </AppContext.Provider>
@@ -214,19 +223,14 @@ class AppModifier {
     });
   }
 
-  onColorChange = (e: React.FormEvent<HTMLInputElement>) => {
+  onNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    this.app.setState({ name: e.currentTarget.value });
+  }
+
+  onColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
     this.app.setState({ color: e.currentTarget.value });
-
-    // Find a way to make this more React-like.
-    // This is a work around to get a better styling on the color picker without using unofficial CSS selectors
-    // Copy from https://stackoverflow.com/a/11471224/2930176
-    const color_picker: HTMLInputElement | null = document.getElementById("color-picker") as HTMLInputElement;
-    const color_picker_wrapper = document.getElementById("color-picker-wrapper");
-    if (color_picker_wrapper !== null && color_picker !== null && color_picker.value !== null) {
-      color_picker_wrapper.style.backgroundColor = color_picker.value;
-      color_picker_wrapper.style.backgroundColor = color_picker.value;
-    }
   }
 }
 

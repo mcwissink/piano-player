@@ -1,5 +1,6 @@
 import * as WebMidi from "webmidi";
 import MidiPlayer from "./MidiPlayer";
+import { SafeSocket } from '../../App';
 
 export interface IMidiEvent<T> {
   id: string;
@@ -33,21 +34,18 @@ export default class MidiController {
   midi: WebMidi.WebMidi;
   player: MidiPlayer;
   input: WebMidi.Input | null;
-  socket: SocketIOClient.Socket;
   activeNotes: ActiveNotes;
   sustainedNotes: SustainedNotes;
   userColor: string;
   sustain: boolean;
-  constructor(socket: SocketIOClient.Socket, userColor: string, instrument: string, deviceCallback: DeviceCallback) {
+  constructor(public socket: SafeSocket, userColor: string, instrument: string, deviceCallback: DeviceCallback) {
     this.midi = WebMidi.default;
     this.player = new MidiPlayer();
     this.input = null;
-    this.socket = socket;
     this.userColor = userColor;
     this.sustain = false;
     this.activeNotes = {};
-    this.sustainedNotes = {}; 
-
+    this.sustainedNotes = {};
     this.socket.on('controlchange', this.controlchangeEvent);
     this.socket.on('noteon', this.noteonEvent);
     this.socket.on('noteoff', this.noteoffEvent);
@@ -71,7 +69,7 @@ export default class MidiController {
 
   wrapEvent<T>(event: T): IMidiEvent<T> {
     return {
-      id: this.socket.id,
+      id: this.socket.raw.id,
       event,
     }
   }

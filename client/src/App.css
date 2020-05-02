@@ -151,26 +151,26 @@ h1, h2 {
 }
 
 /* Forms */
-input[type='submit'], .button {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.5em;
-  color: #fff;
-  border-radius: 8px;
-  box-shadow: 2px -2px 4px #53535347;
-  cursor: pointer;
-  user-select: none;
-  transition: 0.1s all;
-  font-weight: 600;
-}
+/* input[type='submit'], .button { */
+/*   display: inline-flex; */
+/*   align-items: center; */
+/*   padding: 0.5em; */
+/*   color: #fff; */
+/*   border-radius: 8px; */
+/*   box-shadow: 2px -2px 4px #53535347; */
+/*   cursor: pointer; */
+/*   user-select: none; */
+/*   transition: 0.1s all; */
+/*   font-weight: 600; */
+/* } */
 
-input[type="color"] {
-	opacity: 0;
-	display: block;
-	width: 32px;
-	height: 32px;
-	border: none;
-}
+/* input[type="color"] { */
+/* 	opacity: 0; */
+/* 	display: block; */
+/* 	width: 32px; */
+/* 	height: 32px; */
+/* 	border: none; */
+/* } */
 
 .input-border {
   border: 2px solid #7f7f7f !important;
@@ -189,25 +189,25 @@ input[type="color"] {
   transform: translate(0, -2px) scale(0.98);
 }
 
-input:not([type='color']) {
-  background: white;
-  border: 0;
-  border-radius: 8px;
-  padding: 1em;
-  font-size: 1em;
-}
+/* input:not([type='color']) { */
+/*   background: white; */
+/*   border: 0; */
+/*   border-radius: 8px; */
+/*   padding: 1em; */
+/*   font-size: 1em; */
+/* } */
 
 #chat-container {
   display: flex;
   align-items: flex-end;
 }
 
-.button {
-  text-decoration: none;
-  font-weight: 400;
-  font-size: 1em;
-  display: inline-block;
-}
+/* .button { */
+/*   text-decoration: none; */
+/*   font-weight: 400; */
+/*   font-size: 1em; */
+/*   display: inline-block; */
+/* } */
 
 /* 
  * Icons

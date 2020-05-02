@@ -1,7 +1,7 @@
 import React from "react";
 import update from 'immutability-helper';
 import { withRouter, RouteComponentProps } from 'react-router-dom';
-import { ITheme, IAppContext, withContext } from '../App';
+import { ITheme, IAppContext, withContext, SafeSocket } from '../App';
 import Button from "./Button";
 
 interface IRoomSettingsState {
@@ -13,10 +13,8 @@ type IProps = {
   roomName?: string;
 } & IAppContext & RouteComponentProps;
 class RoomSettings extends React.PureComponent<IProps, IRoomSettingsState> {
-  socket: SocketIOClient.Socket;
   constructor(props: IProps) {
     super(props);
-    this.socket = props.socket;
     const theme = props.roomName === undefined ? {
       primary: '#ffffff',
       secondary: '#000000',
@@ -39,13 +37,22 @@ class RoomSettings extends React.PureComponent<IProps, IRoomSettingsState> {
   onRoomSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const {
+      color,
+      modifier,
+      socket,
+    } = this.props;
+    const {
       name,
       theme,
     } = this.state;
     const parsedName = name.trim();
     if (this.canSubmit()) {
       if (this.props.modifier.noRoom()) {
-        this.socket.emit('createRoom', {
+        socket.emit('settings', {
+          name: this.props.name,
+          color,
+        });
+        socket.emit('createRoom', {
           name: parsedName,
           theme,
         }, (roomName?: string) => {
@@ -54,7 +61,7 @@ class RoomSettings extends React.PureComponent<IProps, IRoomSettingsState> {
           }
         }); 
       } else {
-        this.socket.emit('updateRoom', {
+        socket.emit('updateRoom', {
           theme,
         });
       }
@@ -105,15 +112,8 @@ class RoomSettings extends React.PureComponent<IProps, IRoomSettingsState> {
     const noRoom = this.props.modifier.noRoom();
     return (
       <div>
-        {noRoom ? <h1>New Room</h1> : null}
         <form onSubmit={this.onRoomSubmit} style={{ display: 'flex', alignItems: 'center' }}>
-          {noRoom ? <input placeholder="New Room Name" type="text" value={name} onChange={this.onNameChange} /> : null}
-          <div id="color-picker-wrapper-2" style={{backgroundColor: theme.primary, marginRight: '1em'}}>
-            <input id="color-picker-2" type="color" value={theme.primary} onChange={this.onPrimaryChange} />
-          </div>
-          <div id="color-picker-wrapper-3" style={{backgroundColor: theme.secondary, marginRight: '1em'}}>
-            <input id="color-picker-3" type="color" value={theme.secondary} onChange={this.onSecondaryChange} />
-          </div>
+          {noRoom ? <input placeholder="Room Name" type="text" value={name} onChange={this.onNameChange} /> : null}
           <input placeholder="Image URL" type="text" style={{ marginRight: '1em' }} value={theme.image} onChange={this.onImageChange} />
           <Button type="submit" value={`${noRoom ? 'Create' : 'Update'} Room`} disabled={!this.canSubmit()} />
         </form>

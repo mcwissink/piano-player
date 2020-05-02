@@ -5,6 +5,9 @@ const app = express();
 const server = new http.Server(app);
 const io = socket(server);
 
+// Interfaces
+import { Events as E } from './interfaces/IEvents'
+
 class User {
   socket: socket.Socket
   color: string;
@@ -217,38 +220,39 @@ io.on('connection', socket => {
   const user = new User(socket);
   users.set(user.getId(), user);
 
-  socket.on('roomList', e => {
+  socket.on('roomList', () => {
     roomManager.emitRoomList();
   });
   
-  socket.on('settings', (e, callback) => {
+  
+  socket.on('settings', (e: E.Settings, callback) => {
     user.name = e.name === '' ? user.name : e.name;
     user.color = e.color;
     // next line was causing the issue: TypeError: callback is not a function
     // callback(user.getSharedData());
   });
 
-  socket.on('createRoom', (e, callback) => {
+  socket.on('createRoom', (e: E.Room.Create, callback) => {
     callback(roomManager.createRoom(user, e.name, e.theme));
   });
 
-  socket.on('joinRoom', (e, callback) => {
+  socket.on('joinRoom', (e: E.Room.Join, callback) => {
     callback(roomManager.joinRoom(e.id, user));
   });
 
-  socket.on('updateRoom', e => {
+  socket.on('updateRoom', (e: E.Room.Update) => {
     roomManager.updateRoom(user, e.theme);
   });
 
-  socket.on('likeRoom', e => {
-    roomManager.likeRoom(user.roomId);
-  });
+  // socket.on('likeRoom', e => {
+  //   roomManager.likeRoom(user.roomId);
+  // });
 
-  socket.on('updatePermissions', e => {
+  socket.on('updatePermissions', (e: E.Permissions) => {
     roomManager.updatePermissions(user, e.id, e.permissions);
   });
 
-  socket.on('noteon', e => {
+  socket.on('noteon', (e: E.Piano.NoteOn) => {
     roomManager.hasPermission(user, 'play', room => {
       socket.to(user.roomId).emit('noteon', {
         ...e,
@@ -258,7 +262,7 @@ io.on('connection', socket => {
     });
   });
 
-  socket.on('noteoff', e => {
+  socket.on('noteoff', (e: E.Piano.NoteOff) => {
     roomManager.hasPermission(user, 'play', room => {
       socket.to(user.roomId).emit('noteoff', {
         ...e,
@@ -267,7 +271,7 @@ io.on('connection', socket => {
     });
   });
 
-  socket.on('controlchange', e => {
+  socket.on('controlchange', (e: E.Piano.ControlChange) => {
     roomManager.hasPermission(user, 'play', room => {
       socket.to(user.roomId).emit('controlchange', {
         ...e,
@@ -276,14 +280,14 @@ io.on('connection', socket => {
     });
   });
   
-  socket.on('chat', e => {
+  socket.on('chat', (e: E.Chat) => {
     io.to(user.roomId).emit('chat', {
       ...e,
       user: user.getSharedData(),
     });
   });
   
-  socket.on('disconnect', e => {
+  socket.on('disconnect', () => {
     roomManager.leaveRoom(user);
     users.delete(user.getId());
   });

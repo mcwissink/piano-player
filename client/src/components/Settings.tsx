@@ -11,10 +11,8 @@ interface ISettingsState {
 
 type IProps = ISettingsProps & IAppContext;
 class Settings extends React.PureComponent<IProps, ISettingsState> {
-  socket: SocketIOClient.Socket;
   constructor(props: IProps) {
     super(props);
-    this.socket = props.socket;
     this.state = {
       name: '',
     };
@@ -26,11 +24,12 @@ class Settings extends React.PureComponent<IProps, ISettingsState> {
     const {
       color,
       modifier,
+      socket,
     } = this.props;
     const {
       name
     } = this.state;
-    this.socket.emit('settings', {
+    socket.emit('settings', {
       name,
       color,
     }, modifier.onUserChange);

@@ -15,7 +15,7 @@ export default class MidiPlayer {
   async loadSoundfont(instrument: string) {
     try {
       // The typings for Soundfont stink, how to fix
-      this.soundfont = await Soundfont.instrument(new AudioContext(), instrument as any);
+      this.soundfont = await Soundfont.instrument((new AudioContext()) as any, instrument as any);
     } catch (e) {
       console.log('failed');
     }

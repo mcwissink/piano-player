@@ -12,10 +12,8 @@ interface IRoomState {
 
 type IProps = IRoomProps & IAppContext & RouteComponentProps;
 class RoomList extends React.PureComponent<IProps, IRoomState> {
-  socket: SocketIOClient.Socket;
   constructor(props: IProps) {
     super(props);
-    this.socket = props.socket;
   }
 
   renderRoomItem = (room: IRoomListItem) => {

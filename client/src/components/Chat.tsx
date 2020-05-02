@@ -1,6 +1,7 @@
 import React from "react";
-import { IChat, IAppContext, withContext } from '../App';
+import { IChat, IAppContext, withContext, SafeSocket } from '../App';
 import Button from './Button';
+import { Events as E } from '../../../server/interfaces/IEvents';
 
 interface IChatProps {
 
@@ -13,7 +14,7 @@ interface IChatState {
 type IProps = IChatProps & IAppContext;
 
 class Chat extends React.PureComponent<IProps, IChatState> {
-  socket: SocketIOClient.Socket;
+  socket: SafeSocket;
   constructor(props: IProps) {
     super(props);
     this.socket = props.socket;
@@ -40,14 +41,13 @@ class Chat extends React.PureComponent<IProps, IChatState> {
   
   onMessageSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const {
-      message,
-    } = this.state;
+    const message = this.state.message.trim();
     if (message === '') {
       return;
     } 
-    this.socket.emit('chat', {
-      message
+    this.socket.emit<E.Chat, void>('chat', {
+      id: this.socket.raw.id,
+      message,
     });
     this.setState({ message: '' });
 
@@ -67,7 +67,7 @@ class Chat extends React.PureComponent<IProps, IChatState> {
     const actionButton = (() => {
       const words = new Set(chat.message.split(/\W+/).map(word => word.toLowerCase()));
       // Check if the person wants to play the piano
-      if ((words.has('i') || words.has('me')) && words.has('play') && room.permissions.admin && chat.user.id !== this.socket.id) {
+      if ((words.has('i') || words.has('me')) && words.has('play') && room.permissions.admin && chat.user.id !== this.socket.raw.id) {
         return (
           <button
             onClick={modifier.onPermissionsUpdate(chat.user.id, { admin: false, play: true})}>
@@ -94,9 +94,9 @@ class Chat extends React.PureComponent<IProps, IChatState> {
     } = this.state;
     return (
       <div id="chat-container" style={{display: 'flex', flex: 1, overflow: 'auto', flexDirection: 'column'}}>
-        <div id="scrolly" style={{display: 'flex', flex: 1, overflow: 'auto', flexDirection: 'column'}}>
+        <div id="scrolly" style={{display: 'flex', flex: 1, overflow: 'auto', flexDirection: 'column', width: '100%'}}>
           {/* Making scrolling work with flexbox, flexbox spec author, "this is a bug."  https://stackoverflow.com/a/21541021/2930176 */}
-          <div style={{display: 'flex', minHeight: 'min-content', alignItems: 'flex-end', flexDirection: 'column', marginTop: 'auto'}}>
+          <div style={{display: 'flex', minHeight: 'min-content', alignItems: 'flex-start', flexDirection: 'column', marginTop: 'auto'}}>
             {room.chat.map((c, i) => this.renderChatMessage(c, i))}
           </div>
         </div>
