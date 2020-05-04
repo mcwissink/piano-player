@@ -94,7 +94,7 @@ export const AppContext = React.createContext<IAppPartialContext>(initialState);
 export class SafeSocket {
   constructor(public raw: SocketIOClient.Socket) {
   }
-  emit<T, K>(event: string, data?: T, callback?: (data: K) => void) {
+  emit<T, K = void>(event: string, data?: T, callback?: (data: K) => void) {
     this.raw.emit(event, data, callback);
   }
   on<T>(event: string, callback: (data: T) => void) {
@@ -121,10 +121,10 @@ class App extends React.PureComponent<RouteComponentProps, IAppState> {
     this.socket.on('roomList', this.modifier.roomListEvent);
     this.socket.on('roomUpdate', this.modifier.roomEvent);
     this.socket.emit('roomList');
-    this.socket.emit('settings', {
+    this.socket.emit<E.Settings>('settings', {
       name: this.state.name,
       color: this.state.color,
-    } as E.Settings);
+    });
   };
 
   
@@ -143,7 +143,7 @@ class App extends React.PureComponent<RouteComponentProps, IAppState> {
         </div>
         <div id="content">
           <div id="header">
-            <h1>Pianooo</h1>
+            <h1>Keyboard.Cafe</h1>
           </div>
           <div id="roomlist-container">
             <RoomList />
@@ -197,7 +197,7 @@ class AppModifier {
   }
 
   onLeaveRoom = () => {
-    this.app.socket.emit('joinRoom', { id: '' }, () => {});
+    this.app.socket.emit<E.Room.Join>('joinRoom', { id: '' }, () => {});
     this.app.setState(oldState => update(oldState, {
       room: {
         name: { $set: '' },
@@ -259,7 +259,7 @@ export function withContext<P extends object>(WrappedComponent: React.ComponentT
 
 const customHistory = createBrowserHistory();
 const AppWithRouter = withRouter(App);
-const AppWithRouterComponent = React.memo((Thingy) => {
+const AppWithRouterComponent = React.memo(() => {
   return <AppWithRouter />;
 });
 export default () => (

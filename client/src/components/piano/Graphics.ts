@@ -1,5 +1,6 @@
 import { ITheme } from '../../App';
-import { ActiveNotes, INoteonEvent } from "./MidiController"
+import { ActiveNotes } from "./MidiController"
+import { Events as E } from '../../../../server/interfaces/IEvents';
 
 function hexToRgb(hex: string) {
   var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -156,7 +157,7 @@ export default class PianoGrahpics {
     }
   }
 
-  drawBlackKey(x: number, y: number, note: INoteonEvent) {
+  drawBlackKey(x: number, y: number, note: E.Piano.NoteOn) {
     const fillColor = note !== undefined ? '#ff0000' : this.theme.secondary;
     this.ctx.fillStyle = fillColor; 
     this.ctx.strokeStyle = this.theme.primary;
@@ -164,7 +165,7 @@ export default class PianoGrahpics {
     this.ctx.strokeRect(x, y, this.keyWidth * 0.8, this.keyHeight * 0.65);
   }
 
-  drawWhiteKey(x: number, y: number, note: INoteonEvent) {
+  drawWhiteKey(x: number, y: number, note: E.Piano.NoteOff) {
     const fillColor = note !== undefined ? '#ff0000' : this.theme.primary;
     this.ctx.fillStyle = fillColor;
     this.ctx.strokeStyle = this.theme.secondary;

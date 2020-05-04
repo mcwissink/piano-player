@@ -75,7 +75,7 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
         return '';
       }
     })();
-    this.setState({ devices: devices.map(device => device.name), device });
+    this.setState({ devices: devices.map(d => d.name), device });
   }
 
   handleDeviceSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {

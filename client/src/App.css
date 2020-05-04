@@ -35,8 +35,8 @@ html, body, #root, #piano-page-background {
 
 #piano-page-background-2 {
   background-color: #0000008a;
-  -webkit-mask: -webkit-linear-gradient(0.25turn, black, transparent 30%, black);
-  -webkit-mask: linear-gradient(0.5turn, black, transparent 30%, black);
+  -webkit-mask: -webkit-linear-gradient(0.25turn, black, transparent 50%, black);
+  -webkit-mask: linear-gradient(0.5turn, black, transparent 50%, black);
   -webkit-filter: blur(3px);
   mask: url('./img/filters.svg#mask-linear');
   filter: url('./img/filters.svg#filtre2');

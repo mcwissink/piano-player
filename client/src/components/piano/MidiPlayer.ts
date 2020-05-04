@@ -1,14 +1,12 @@
 import Soundfont from "soundfont-player"
-import * as WebMidi from "webmidi";
+import { Events as E } from '../../../../server/interfaces/IEvents';
 
 export default class MidiPlayer {
   soundfont: Soundfont.Player | null;
-  context = AudioContext;
   activeNotes: {[note: number]: Soundfont.Player | undefined};
   constructor() {
     this.soundfont = null;
     this.activeNotes = {};
-    this.context = this.context;
     this.loadSoundfont('acoustic_grand_piano');
   }
 
@@ -21,19 +19,19 @@ export default class MidiPlayer {
     }
   }
 
-  noteon(event: WebMidi.InputEventNoteon) {
+  noteon(e: E.Piano.NoteOn) {
     if (this.soundfont !== null) {
-      const note = this.activeNotes[event.note.number];
+      const note = this.activeNotes[e.note.number];
       if (note !== undefined) {
         note.stop();
       }
-      this.activeNotes[event.note.number] = this.soundfont.play(event.note.number.toString());
+      this.activeNotes[e.note.number] = this.soundfont.play(e.note.number.toString());
     }
   }
 
-  noteoff(event: WebMidi.InputEventNoteoff) {
+  noteoff(e: E.Piano.NoteOff) {
     if (this.soundfont !== null) {
-      const note = this.activeNotes[event.note.number];
+      const note = this.activeNotes[e.note.number];
       if (note !== undefined) {
         note.stop();
       }

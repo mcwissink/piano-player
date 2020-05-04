@@ -20,7 +20,7 @@ class Room extends React.PureComponent<IProps, IRoomState> {
   componentDidMount() {
     this.props.socket.emit('joinRoom', {
       id: this.props.id,
-    }, (room: IRoom|null) => {
+    }, (room: IRoom | null) => {
       this.props.modifier.roomEvent(room);
     });
   }

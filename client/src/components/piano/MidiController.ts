@@ -1,33 +1,15 @@
 import * as WebMidi from "webmidi";
 import MidiPlayer from "./MidiPlayer";
 import { SafeSocket } from '../../App';
+import { Events as E } from '../../../../server/interfaces/IEvents';
 
-export interface IMidiEvent<T> {
-  id: string;
-  event: T
-}
 
-export interface INoteonEvent {
-  id: string;
-  event: WebMidi.InputEventNoteon;
-}
-
-export interface IControlchangeEvent {
-  id: string;
-  event: WebMidi.InputEventControlchange;
-}
-
-export interface INoteoffEvent {
-  id: string;
-  event: WebMidi.InputEventNoteoff;
-}
-
-export interface IActiveNote extends INoteonEvent {
+export interface IActiveNote extends E.Piano.NoteOn {
   sustain?: true;
 }
 
 export type ActiveNotes = {[note: number]: IActiveNote}; 
-export type SustainedNotes = {[note: number]: IMidiEvent<WebMidi.InputEventNoteoff>};
+export type SustainedNotes = {[note: number]: E.Piano.NoteOff};
 
 type DeviceCallback = (devices: WebMidi.Input[]) => void;
 export default class MidiController {
@@ -46,7 +28,7 @@ export default class MidiController {
     this.sustain = false;
     this.activeNotes = {};
     this.sustainedNotes = {};
-    this.socket.on('controlchange', this.controlchangeEvent);
+    this.socket.on<E.Piano.ControlChange>('controlchange', this.controlchangeEvent);
     this.socket.on('noteon', this.noteonEvent);
     this.socket.on('noteoff', this.noteoffEvent);
     this.init(deviceCallback);
@@ -67,13 +49,6 @@ export default class MidiController {
     this.userColor = color;
   }
 
-  wrapEvent<T>(event: T): IMidiEvent<T> {
-    return {
-      id: this.socket.raw.id,
-      event,
-    }
-  }
-
   setInstrument(instrument: string) {
     this.player.loadSoundfont(instrument);
   }
@@ -91,49 +66,67 @@ export default class MidiController {
     }
   }
 
-  controlchange = (event: WebMidi.InputEventControlchange) => {
-    const controlchange  = this.wrapEvent(event);
+  controlchange = (e: WebMidi.InputEventControlchange) => {
+    const controlchange: E.Piano.ControlChange = {
+      id: this.socket.raw.id,
+      control: {
+        number: e.controller.number,
+        value: e.value,
+      }
+    };
     this.controlchangeEvent(controlchange);
     this.socket.emit('controlchange', controlchange);
   }
 
-  noteon = (event: WebMidi.InputEventNoteon) => {
-    const noteon = this.wrapEvent(event);
+  noteon = (e: WebMidi.InputEventNoteon) => {
+    const noteon: E.Piano.NoteOn = {
+      id: this.socket.raw.id,
+      color: this.userColor,
+      note: {
+        number: e.note.number,
+        velocity: e.velocity,
+      }
+    };
     this.noteonEvent(noteon);
     this.socket.emit('noteon', noteon);
   }
 
-  noteoff = (event: WebMidi.InputEventNoteoff) => {
-    const noteoff = this.wrapEvent(event);
+  noteoff = (e: WebMidi.InputEventNoteoff) => {
+    const noteoff: E.Piano.NoteOff = {
+      id: this.socket.raw.id,
+      note: {
+        number: e.note.number,
+      }
+    };
     this.noteoffEvent(noteoff);
     this.socket.emit('noteoff', noteoff);
   }
 
-  controlchangeEvent = (data: IMidiEvent<WebMidi.InputEventControlchange>) => {
-    switch (data.event.controller.number) {
+  controlchangeEvent = (e: E.Piano.ControlChange) => {
+    switch (e.control.number) {
       case 64: { //Sustain pedal
-        if (data.event.value > 0) {
+        if (e.control.value > 0) {
           this.sustain = true;
         } else {
           this.sustain = false;
-          Object.values(this.sustainedNotes).forEach(event => this.noteoffEvent(event)); 
+          Object.values(this.sustainedNotes).forEach(note => this.noteoffEvent(note)); 
         }
       }
     }
   }
 
-  noteonEvent = (data: IMidiEvent<WebMidi.InputEventNoteon>) => {
-    delete this.sustainedNotes[data.event.note.number];
-    this.player.noteon(data.event);
-    this.activeNotes[data.event.note.number] = data;
+  noteonEvent = (e: E.Piano.NoteOn) => {
+    delete this.sustainedNotes[e.note.number];
+    this.player.noteon(e);
+    this.activeNotes[e.note.number] = e;
   }
 
-  noteoffEvent = (data: IMidiEvent<WebMidi.InputEventNoteoff>) => {
+  noteoffEvent = (e: E.Piano.NoteOff) => {
     if (this.sustain) {
-      this.sustainedNotes[data.event.note.number] = data;
+      this.sustainedNotes[e.note.number] = e;
     } else {
-      this.player.noteoff(data.event);
-      delete this.activeNotes[data.event.note.number];
+      this.player.noteoff(e);
+      delete this.activeNotes[e.note.number];
     }
   }
   
