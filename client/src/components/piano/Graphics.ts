@@ -24,6 +24,7 @@ class NoteGraphics {
     b: number,
     a: number,
   }
+  gradient: CanvasGradient;
   constructor(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, color: string) {
     this.canvas = canvas;
     this.ctx = ctx;
@@ -31,27 +32,30 @@ class NoteGraphics {
     this.y = y;
     this.width = width;
     this.height = height;
-    this.color = Object.assign({ a: 255 }, hexToRgb(color));
+    this.color = Object.assign({ a: 1.0 }, hexToRgb(color));
+    this.gradient = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height);
+    this.gradient.addColorStop(0, `rgba(${this.color.r},${this.color.g},${this.color.b}, 0)`)
+    this.gradient.addColorStop(1, `rgba(${this.color.r},${this.color.g},${this.color.b})`)
   }
   draw() {
-    this.color.a -= 0.01;
     this.y--;
-    this.ctx.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.color.a})`;
+    this.ctx.fillStyle = this.gradient;
     this.ctx.fillRect(this.x, this.y, this.width, this.height);
   }
 }
 /*
 const gradientWidth = canvas.width;
-    const gradientHeight = canvas.height / 2;
+const gradientHeight = canvas.height / 2;
 
-    const gradientCanvas = document.createElement('canvas');
-    gradientCanvas.width = gradientWidth;
-    gradientCanvas.height = gradientHeight;
-    const gradient = ctx.createLinearGradient(0, 0, 0, gradientHeight);
-    gradient.addColorStop(0.1, "rgba(0, 0, 0, 1)");
-    gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, gradientWidth, gradientHeight);*/
+const gradientCanvas = document.createElement('canvas');
+gradientCanvas.width = gradientWidth;
+gradientCanvas.height = gradientHeight;
+const gradient = ctx.createLinearGradient(0, 0, 0, gradientHeight);
+gradient.addColorStop(0.1, "rgba(0, 0, 0, 1)");
+gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
+ctx.fillStyle = gradient;
+ctx.fillRect(0, 0, gradientWidth, gradientHeight);
+*/
 
 export default class PianoGrahpics {
   BLACK_KEYS = [1, 4, 6, 9, 11];
@@ -81,6 +85,11 @@ export default class PianoGrahpics {
 
   setTheme(theme: ITheme) {
     this.theme = theme;
+  }
+
+  resize() {
+    this.keyWidth = this.canvas.width / 52;
+    this.topOfPiano = this.canvas.height - this.keyHeight;
   }
 
   draw(activeNotes: ActiveNotes) {

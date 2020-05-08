@@ -28,7 +28,7 @@ class RoomList extends React.PureComponent<IProps, IRoomState> {
             <div className="tooltip-container">
               <div className="tooltip">
                 <div className="tooltip-text">
-                  <div>Allow {room.admins.length > 0 ? room.admins[0].name : null} to play the piano?</div>
+                  <div>Listen to {room.admins.length > 0 ? room.admins[0].name : "nobody"} play the piano?</div>
                 </div>
 
                 <svg className="tooltip-triangle" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 49.97 12.57">

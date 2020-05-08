@@ -2,6 +2,7 @@ import React from "react";
 import { IAppContext, withContext } from '../App';
 import UserSettings from '../components/UserSettings';
 import RoomSettings from '../components/RoomSettings';
+import Piano from '../components/Piano';
 import { withRouter, RouteComponentProps } from 'react-router-dom';
 
 type IProps = IAppContext & RouteComponentProps;

@@ -17,6 +17,7 @@ interface IPianoState {
 
 type IProps = IPianoProps & IAppContext
 class Piano extends React.PureComponent<IProps, IPianoState> {
+  canvas?: HTMLCanvasElement;
   midi: MidiController;
   frameId: number;
   graphics?: PianoGraphics;
@@ -46,9 +47,9 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
     if (ctx === null) {
       return;
     }
-    const resizeCanvas = this.resizeCanvas(canvas);
-    window.addEventListener('resize', resizeCanvas, false);
-    resizeCanvas();
+    this.canvas = canvas;
+    window.addEventListener('resize', this.resizeCanvas, false);
+    this.resizeCanvas();
     this.graphics = new PianoGraphics(canvas, ctx, this.props.theme);
     this.update();
   }
@@ -90,13 +91,16 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
     this.setState({ instrument });
   }
 
-  resizeCanvas = (canvas: HTMLCanvasElement) => () => {
+  resizeCanvas = (e?: any) => {
+    console.log(e);
     // Make it visually fill the positioned parent
-    canvas.style.width ='100%';
-    canvas.style.height ='100%';
-    // ...then set the internal size to match
-    canvas.width = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
+    if (this.canvas !== undefined) {
+      this.canvas.width = this.canvas.offsetWidth;
+      this.canvas.height = this.canvas.offsetHeight;
+      if (this.graphics !== undefined) {
+        this.graphics.resize();
+      }
+    }
   }
 
   render() {
@@ -110,7 +114,8 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
     } = this.props;
     return (
       <>
-        <canvas style={{ flexGrow: 1 }} ref={this.setup} />
+        <canvas style={{ display: 'block', height: '100%' }} ref={this.setup} />
+        <hr/>
         {room.permissions.admin ? (
           <div>
             <select value={device} onChange={this.handleDeviceSelect}>

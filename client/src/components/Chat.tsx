@@ -78,7 +78,7 @@ class Chat extends React.PureComponent<IProps, IChatState> {
       return null;
     })();
     return (
-      <div key={i} style={{background: '#000000d6', color: 'white', padding: '1em', marginBottom: '0.5em', borderRadius: 6, display: 'inline-block', maxWidth: '20em'}}>
+      <div key={i} style={{background: '#000000d6', color: 'white', padding: '0.5em', marginBottom: '0.5em', borderRadius: 6, display: 'inline-block', maxWidth: '20em'}}>
         <span><span style={{ color: chat.user.color }}>{chat.user.name}</span>: {chat.message}</span>
         {/* {actionButton} */}
       </div>
@@ -100,8 +100,8 @@ class Chat extends React.PureComponent<IProps, IChatState> {
             {room.chat.map((c, i) => this.renderChatMessage(c, i))}
           </div>
         </div>
-        <form onSubmit={this.onMessageSubmit}>
-          <input placeholder="Send a message" style={{marginRight: '1em'}} type="text" value={message} onChange={this.onMessageChange} />
+        <form onSubmit={this.onMessageSubmit} style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', width: '100%' }}>
+          <input placeholder="Send a message" style={{ marginRight: '1em', flexGrow: 1 }} type="text" value={message} onChange={this.onMessageChange} />
           <Button type="submit" value="Send" />
         </form>
       </div>

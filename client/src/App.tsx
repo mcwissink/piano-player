@@ -1,7 +1,7 @@
 import React from 'react';
 import io from 'socket.io-client';
 import update from 'immutability-helper';
-import { Switch, Route, RouteComponentProps, withRouter, Router, BrowserRouter } from 'react-router-dom';
+import { Link, Switch, Route, RouteComponentProps, withRouter, Router, BrowserRouter } from 'react-router-dom';
 import './App.css';
 
 import RoomList from './components/RoomList';
@@ -53,7 +53,7 @@ export interface IPermissions {
 interface IAppState {
   rooms: IRoomListItem[];
   room: {
-    permissions: IPermissions;
+    permissions: IPermissions
     name: string;
     chat: IChat[];
     players: IUser[];
@@ -143,7 +143,9 @@ class App extends React.PureComponent<RouteComponentProps, IAppState> {
         </div>
         <div id="content">
           <div id="header">
-            <h1>Keyboard.Cafe</h1>
+            <Link to={`/`}>
+              <h1>Keyboard.Cafe</h1>
+            </Link>
           </div>
           <div id="roomlist-container">
             <RoomList />
@@ -201,6 +203,7 @@ class AppModifier {
     this.app.setState(oldState => update(oldState, {
       room: {
         name: { $set: '' },
+        chat: { $set: [] },
       },
     }));
   }
