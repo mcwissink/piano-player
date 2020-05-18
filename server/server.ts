@@ -1,6 +1,7 @@
 import express from 'express';
 import http from 'http';
 import socket from 'socket.io';
+import path from 'path';
 const app = express();
 const server = new http.Server(app);
 const io = socket(server);
@@ -294,6 +295,11 @@ io.on('connection', socket => {
 
 app.get('/api', (req, res) => {
   res.json({ hello: "world"});
+});
+
+app.use(express.static(path.join(__dirname, 'build')));
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
 
 

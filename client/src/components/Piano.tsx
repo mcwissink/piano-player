@@ -29,7 +29,11 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
       device: '',
       devices: [],
     };
-    this.midi = new MidiController(this.props.socket, this.props.color, this.state.instrument, this.handleDeviceUpdate);
+    this.midi = new MidiController(this.props.socket, this.props.color, this.state.instrument);
+  }
+
+  componentDidMount() {
+    this.midi.init(this.handleDeviceUpdate);
   }
 
   componentDidUpdate() {
@@ -66,17 +70,18 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
     window.cancelAnimationFrame(this.frameId);
   }
 
-  handleDeviceUpdate = (devices: WebMidi.Input[]) => {
+  handleDeviceUpdate = (devices: string[]) => {
+    console.log(devices);
     const device = (() => {
       if (devices.length > 0) {
-        const deviceName = devices[0].name;
+        const deviceName = devices[0];
         this.midi.connect(deviceName);
         return deviceName;
       } else {
         return '';
       }
     })();
-    this.setState({ devices: devices.map(d => d.name), device });
+    this.setState({ devices: devices, device });
   }
 
   handleDeviceSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -91,8 +96,7 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
     this.setState({ instrument });
   }
 
-  resizeCanvas = (e?: any) => {
-    console.log(e);
+  resizeCanvas = () => {
     // Make it visually fill the positioned parent
     if (this.canvas !== undefined) {
       this.canvas.width = this.canvas.offsetWidth;

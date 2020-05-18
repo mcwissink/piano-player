@@ -2,6 +2,7 @@ import * as WebMidi from "webmidi";
 import MidiPlayer from "./MidiPlayer";
 import { SafeSocket } from '../../App';
 import { Events as E } from '../../../../server/interfaces/IEvents';
+import { keyMap } from '../../util';
 
 
 export interface IActiveNote extends E.Piano.NoteOn {
@@ -11,8 +12,9 @@ export interface IActiveNote extends E.Piano.NoteOn {
 export type ActiveNotes = {[note: number]: IActiveNote}; 
 export type SustainedNotes = {[note: number]: E.Piano.NoteOff};
 
-type DeviceCallback = (devices: WebMidi.Input[]) => void;
+type DeviceCallback = (devices: string[]) => void;
 export default class MidiController {
+  static COMPUTER_INPUT = "Default";
   midi: WebMidi.WebMidi;
   player: MidiPlayer;
   input: WebMidi.Input | null;
@@ -20,7 +22,7 @@ export default class MidiController {
   sustainedNotes: SustainedNotes;
   userColor: string;
   sustain: boolean;
-  constructor(public socket: SafeSocket, userColor: string, instrument: string, deviceCallback: DeviceCallback) {
+  constructor(public socket: SafeSocket, userColor: string, instrument: string) {
     this.midi = WebMidi.default;
     this.player = new MidiPlayer();
     this.input = null;
@@ -31,18 +33,24 @@ export default class MidiController {
     this.socket.on<E.Piano.ControlChange>('controlchange', this.controlchangeEvent);
     this.socket.on('noteon', this.noteonEvent);
     this.socket.on('noteoff', this.noteoffEvent);
-    this.init(deviceCallback);
   }
 
   init(deviceCallback: DeviceCallback) {
-	  this.midi.enable((err: any) => {
+	  this.midi.enable(err => {
       if (err) {
         console.log("Web Midi API not supported");
+        deviceCallback(this.getInputs());
       } else {
-        this.midi.addListener("connected", () => deviceCallback(this.midi.inputs));
-        this.midi.addListener("disconnected", () => deviceCallback(this.midi.inputs));
+        this.midi.addListener("connected", () => deviceCallback(this.getInputs()));
+        this.midi.addListener("disconnected", () => deviceCallback(this.getInputs()));
       }
 	  });
+  }
+
+  getInputs() {
+    const inputs = this.midi.inputs.map(input => input.name)
+    inputs.push(MidiController.COMPUTER_INPUT)
+    return inputs;
   }
 
   setUserColor(color: string) {
@@ -55,6 +63,11 @@ export default class MidiController {
 
   connect(name: string) {
     this.remove();
+    if (name === MidiController.COMPUTER_INPUT) {
+      window.addEventListener("keypress", this.handleKeyDown);
+      window.addEventListener("keyup", this.handleKeyUp);
+      return;
+    }
     const device = name === "" ? false : this.midi.getInputByName(name);
     if (device) {
       this.input = device;
@@ -64,6 +77,38 @@ export default class MidiController {
     } else {
       this.input = null;
     }
+  }
+
+  handleKeyDown = (e: KeyboardEvent) => {
+    const note = keyMap[e.key];
+    if (note === undefined || this.activeNotes[note] !== undefined) {
+      return;
+    }
+    const noteon: E.Piano.NoteOn = {
+      id: this.socket.raw.id,
+      color: this.userColor,
+      note: {
+        number: note,
+        velocity: 90,
+      }
+    };
+    this.noteonEvent(noteon);
+    this.socket.emit('noteon', noteon);
+  }
+
+  handleKeyUp = (e: KeyboardEvent) => {
+    const note = keyMap[e.key];
+    if (note === undefined) {
+      return;
+    }
+    const noteoff: E.Piano.NoteOff = {
+      id: this.socket.raw.id,
+      note: {
+        number: note,
+      }
+    };
+    this.noteoffEvent(noteoff);
+    this.socket.emit('noteoff', noteoff);
   }
 
   controlchange = (e: WebMidi.InputEventControlchange) => {
@@ -131,6 +176,8 @@ export default class MidiController {
   }
   
   remove() {
+    window.removeEventListener("keypress", this.handleKeyDown);
+    window.removeEventListener("keyup", this.handleKeyUp);
     if (this.input !== null) {
       this.input.removeListener();
     }
