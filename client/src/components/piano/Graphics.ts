@@ -1,6 +1,5 @@
 import { ITheme } from '../../App';
-import { ActiveNotes } from "./MidiController"
-import { Events as E } from '../../../../server/interfaces/IEvents';
+import { IActiveNote, ActiveNotes } from "./MidiController"
 
 function hexToRgb(hex: string) {
   var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -8,7 +7,7 @@ function hexToRgb(hex: string) {
     r: parseInt(result[1], 16),
     g: parseInt(result[2], 16),
     b: parseInt(result[3], 16)
-  } : null;
+  } : { r: 0, g: 0, b: 0 };
 }
 
 class NoteGraphics {
@@ -18,24 +17,15 @@ class NoteGraphics {
   y: number;
   width: number;
   height: number;
-  color: {
-    r: number,
-    g: number,
-    b: number,
-    a: number,
-  }
   gradient: CanvasGradient;
-  constructor(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, color: string) {
+  constructor(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, gradient: CanvasGradient) {
     this.canvas = canvas;
     this.ctx = ctx;
     this.x = x;
     this.y = y;
     this.width = width;
     this.height = height;
-    this.color = Object.assign({ a: 1.0 }, hexToRgb(color));
-    this.gradient = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height);
-    this.gradient.addColorStop(0, `rgba(${this.color.r},${this.color.g},${this.color.b}, 0)`)
-    this.gradient.addColorStop(1, `rgba(${this.color.r},${this.color.g},${this.color.b})`)
+    this.gradient = gradient;
   }
   draw() {
     this.y--;
@@ -68,6 +58,7 @@ export default class PianoGrahpics {
   keyWidth: number;
   keyHeight: number;
   theme: ITheme;
+  gradients: {[id: string]: CanvasGradient} = {};
   constructor(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, theme: ITheme) {
     this.canvas = canvas;
     this.ctx = ctx;
@@ -125,7 +116,8 @@ export default class PianoGrahpics {
         // Handle drawing the notes
         if (note !== undefined) {
           if (this.activeDrawNotes[i] === undefined) {
-            this.activeDrawNotes[i] = new NoteGraphics(this.canvas, this.ctx, x, this.topOfPiano, this.keyWidth, 1, '#ff0000');
+
+            this.activeDrawNotes[i] = new NoteGraphics(this.canvas, this.ctx, x, this.topOfPiano, this.keyWidth, 1, this.getGradient(note));
           } else {
             this.activeDrawNotes[i].height++;
           }
@@ -150,7 +142,8 @@ export default class PianoGrahpics {
         if (note !== undefined) {
           if (this.activeDrawNotes[i] === undefined) {
             // No active note so create one
-            this.activeDrawNotes[i] = new NoteGraphics(this.canvas, this.ctx, x, this.topOfPiano, this.keyWidth * 0.8, 1, '#ff0000');
+
+            this.activeDrawNotes[i] = new NoteGraphics(this.canvas, this.ctx, x, this.topOfPiano, this.keyWidth * 0.8, 1, this.getGradient(note));
           } else {
             // update the active note
             this.activeDrawNotes[i].height++;
@@ -166,19 +159,33 @@ export default class PianoGrahpics {
     }
   }
 
-  drawBlackKey(x: number, y: number, note: E.Piano.NoteOn) {
-    const fillColor = note !== undefined ? '#ff0000' : this.theme.secondary;
+  drawBlackKey(x: number, y: number, note: IActiveNote) {
+    const fillColor = note !== undefined ? note.color : this.theme.secondary;
     this.ctx.fillStyle = fillColor; 
     this.ctx.strokeStyle = this.theme.primary;
     this.ctx.fillRect(x, y, this.keyWidth * 0.8, this.keyHeight * 0.65);
     this.ctx.strokeRect(x, y, this.keyWidth * 0.8, this.keyHeight * 0.65);
   }
 
-  drawWhiteKey(x: number, y: number, note: E.Piano.NoteOff) {
-    const fillColor = note !== undefined ? '#ff0000' : this.theme.primary;
+  drawWhiteKey(x: number, y: number, note: IActiveNote) {
+    const fillColor = note !== undefined ? note.color : this.theme.primary;
     this.ctx.fillStyle = fillColor;
     this.ctx.strokeStyle = this.theme.secondary;
     this.ctx.fillRect(x, y, this.keyWidth, this.keyHeight);
     this.ctx.strokeRect(x, y, this.keyWidth, this.keyHeight);
+  }
+
+  getGradient(note: IActiveNote) {
+    const {
+      id,
+      color,
+    } = note;
+    const { r, g, b }= hexToRgb(color);
+    if (this.gradients[id] === undefined) {
+      this.gradients[id] = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height);
+      this.gradients[id].addColorStop(0, `rgba(${r},${g},${b}, 0)`)
+      this.gradients[id].addColorStop(1, `rgb(${r},${g},${b})`)
+    }
+    return this.gradients[id];
   }
 }

@@ -69,6 +69,7 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
 
   componentWillUnmount() {
     window.cancelAnimationFrame(this.frameId);
+    this.midi.disconnect();
   }
 
   handleDeviceUpdate = (devices: string[]) => {

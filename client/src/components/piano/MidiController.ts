@@ -67,7 +67,7 @@ export default class MidiController {
   }
 
   connect(name: string) {
-    this.remove();
+    this.disconnect();
     if (name === MidiController.COMPUTER_INPUT) {
       window.addEventListener("keypress", this.handleKeyDown);
       window.addEventListener("keyup", this.handleKeyUp);
@@ -182,7 +182,7 @@ export default class MidiController {
     }
   }
   
-  remove() {
+  disconnect() {
     window.removeEventListener("keypress", this.handleKeyDown);
     window.removeEventListener("keyup", this.handleKeyUp);
     if (this.input !== null) {
