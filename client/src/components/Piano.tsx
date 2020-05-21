@@ -37,7 +37,8 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
   }
 
   componentDidUpdate() {
-    this.midi.setUserColor(this.props.color);
+    this.midi.setNoteColor(this.props.color);
+    this.midi.setActive(this.props.room.activePiano);
     if (this.graphics !== undefined) {
       this.graphics.setTheme(this.props.theme);
     }
@@ -71,7 +72,9 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
   }
 
   handleDeviceUpdate = (devices: string[]) => {
-    console.log(devices);
+    if (!this.props.room.permissions.play) {
+      return;
+    }
     const device = (() => {
       if (devices.length > 0) {
         const deviceName = devices[0];
@@ -118,7 +121,7 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
     } = this.props;
     return (
       <>
-        <canvas style={{ display: 'block', height: '100%' }} ref={this.setup} />
+        <canvas onFocus={() => console.log('focus')} onBlur={() => console.log('blur')} style={{ display: 'block', height: '100%' }} ref={this.setup} />
         <hr/>
         {room.permissions.admin ? (
           <div>

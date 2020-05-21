@@ -88,6 +88,7 @@ class Chat extends React.PureComponent<IProps, IChatState> {
   render() {
     const {
       room,
+      modifier,
     } = this.props;
     const {
       message,
@@ -101,7 +102,7 @@ class Chat extends React.PureComponent<IProps, IChatState> {
           </div>
         </div>
         <form onSubmit={this.onMessageSubmit} style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', width: '100%' }}>
-          <input placeholder="Send a message" style={{ marginRight: '1em', flexGrow: 1 }} type="text" value={message} onChange={this.onMessageChange} />
+          <input onFocus={modifier.disablePiano} onBlur={modifier.enablePiano} placeholder="Send a message" style={{ marginRight: '1em', flexGrow: 1 }} type="text" value={message} onChange={this.onMessageChange} />
           <Button type="submit" value="Send" />
         </form>
       </div>

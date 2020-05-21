@@ -20,13 +20,14 @@ export default class MidiController {
   input: WebMidi.Input | null;
   activeNotes: ActiveNotes;
   sustainedNotes: SustainedNotes;
-  userColor: string;
+  noteColor: string;
   sustain: boolean;
-  constructor(public socket: SafeSocket, userColor: string, instrument: string) {
+  active: boolean = true;
+  constructor(public socket: SafeSocket, noteColor: string, instrument: string) {
     this.midi = WebMidi.default;
     this.player = new MidiPlayer();
     this.input = null;
-    this.userColor = userColor;
+    this.noteColor = noteColor;
     this.sustain = false;
     this.activeNotes = {};
     this.sustainedNotes = {};
@@ -53,8 +54,12 @@ export default class MidiController {
     return inputs;
   }
 
-  setUserColor(color: string) {
-    this.userColor = color;
+  setNoteColor(color: string) {
+    this.noteColor = color;
+  }
+
+  setActive(active: boolean) {
+    this.active = active;
   }
 
   setInstrument(instrument: string) {
@@ -80,13 +85,14 @@ export default class MidiController {
   }
 
   handleKeyDown = (e: KeyboardEvent) => {
+    if (!this.active) { return; }
     const note = keyMap[e.key];
     if (note === undefined || this.activeNotes[note] !== undefined) {
       return;
     }
     const noteon: E.Piano.NoteOn = {
       id: this.socket.raw.id,
-      color: this.userColor,
+      color: this.noteColor,
       note: {
         number: note,
         velocity: 90,
@@ -97,6 +103,7 @@ export default class MidiController {
   }
 
   handleKeyUp = (e: KeyboardEvent) => {
+    if (!this.active) { return; }
     const note = keyMap[e.key];
     if (note === undefined) {
       return;
@@ -126,7 +133,7 @@ export default class MidiController {
   noteon = (e: WebMidi.InputEventNoteon) => {
     const noteon: E.Piano.NoteOn = {
       id: this.socket.raw.id,
-      color: this.userColor,
+      color: this.noteColor,
       note: {
         number: e.note.number,
         velocity: e.velocity,

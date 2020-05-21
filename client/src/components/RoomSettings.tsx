@@ -6,6 +6,7 @@ import Button from "./Button";
 
 interface IRoomSettingsState {
   name: string;
+
   theme: ITheme;
 }
 
@@ -106,6 +107,9 @@ class RoomSettings extends React.PureComponent<IProps, IRoomSettingsState> {
 
   render() {
     const {
+      modifier,
+    } = this.props;
+    const {
       name,
       theme,
     } = this.state;
@@ -114,7 +118,7 @@ class RoomSettings extends React.PureComponent<IProps, IRoomSettingsState> {
       <div>
         <form onSubmit={this.onRoomSubmit} style={{ display: 'flex', alignItems: 'center' }}>
           {noRoom ? <input placeholder="Room Name" type="text" value={name} onChange={this.onNameChange} /> : null}
-          <input placeholder="Image URL" type="text" style={{ marginRight: '1em' }} value={theme.image} onChange={this.onImageChange} />
+          <input onFocus={modifier.disablePiano} onBlur={modifier.enablePiano} placeholder="Image URL" type="text" style={{ marginRight: '1em' }} value={theme.image} onChange={this.onImageChange} />
           <Button type="submit" value={`${noRoom ? 'Create' : 'Update'} Room`} disabled={!this.canSubmit()} />
         </form>
       </div>

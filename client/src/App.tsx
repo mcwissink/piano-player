@@ -57,6 +57,7 @@ interface IAppState {
     name: string;
     chat: IChat[];
     players: IUser[];
+    activePiano: boolean
   };
   name: string;
   color: string;
@@ -82,6 +83,7 @@ const initialState = {
     name: '',
     chat: [],
     players: [],
+    activePiano: true,
   },
   theme: {
     primary: '#ffffff',
@@ -109,13 +111,13 @@ class App extends React.PureComponent<RouteComponentProps, IAppState> {
     this.state = initialState;
     this.modifier = new AppModifier(this);
     
-    this.socket = new SafeSocket(io('localhost:3001', {
+    this.socket = new SafeSocket(io(window.location.host, {
       transports: ['websocket']
     }));
     this.socket.on('reconnect_attempt', () => {
       this.socket.raw.io.opts.transports = ['polling', 'websocket'];
     });
-    this.socket.on('connect_error', () => console.log("error"));
+    this.socket.on('connect_error', e => console.log(e));
     this.socket.on('connect', () => console.log("connected"));
     this.socket.on('chat', this.modifier.chatEvent);
     this.socket.on('roomList', this.modifier.roomListEvent);
@@ -179,6 +181,22 @@ class AppModifier {
     this.app.setState(oldState => update(oldState, {
       room: {
         chat: { $push: [data] },
+      },
+    }));
+  }
+
+  disablePiano = () => {
+    this.app.setState(oldState => update(oldState, {
+      room: {
+        activePiano: { $set: false }
+      },
+    }));
+  }
+
+  enablePiano = () => {
+    this.app.setState(oldState => update(oldState, {
+      room: {
+        activePiano: { $set: true }
       },
     }));
   }
