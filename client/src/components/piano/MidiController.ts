@@ -85,6 +85,7 @@ export default class MidiController {
   }
 
   handleKeyDown = (e: KeyboardEvent) => {
+    // Prevent the piano playing when user is typing
     if (!this.active) { return; }
     const note = keyMap[e.key];
     if (note === undefined || this.activeNotes[note] !== undefined) {
@@ -95,7 +96,7 @@ export default class MidiController {
       color: this.noteColor,
       note: {
         number: note,
-        velocity: 90,
+        velocity: 100,
       }
     };
     this.noteonEvent(noteon);
@@ -103,6 +104,7 @@ export default class MidiController {
   }
 
   handleKeyUp = (e: KeyboardEvent) => {
+    // Prevent the piano playing when user is typing
     if (!this.active) { return; }
     const note = keyMap[e.key];
     if (note === undefined) {

@@ -80,7 +80,6 @@ class RoomManager {
     for (const id of room.users.values()) {
       const user = users.get(id);
       if (user !== undefined) {
-        console.log(room.theme);
         user.socket.emit('roomUpdate', this.getRoomData(room, user));
       }
     }
@@ -236,6 +235,8 @@ io.on('connection', socket => {
   });
 
   socket.on('joinRoom', (e: E.Room.Join, callback) => {
+    user.name = e.user.name === '' ? user.name : e.user.name;
+    user.color = e.user.color;
     callback(roomManager.joinRoom(e.id, user));
   });
 

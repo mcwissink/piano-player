@@ -4,6 +4,7 @@ import { withRouter, RouteComponentProps } from 'react-router-dom';
 import RoomSettings from '../components/RoomSettings';
 import Chat from '../components/Chat';
 import Piano from "../components/Piano";
+import { Events as E } from '../../../server/interfaces/IEvents';
 
 interface IRoomProps {
   id: string;
@@ -18,9 +19,19 @@ class Room extends React.PureComponent<IProps, IRoomState> {
   }
 
   componentDidMount() {
-    this.props.socket.emit('joinRoom', {
+    const {
+      id,
+      name,
+      color,
+      socket
+    } = this.props;
+    socket.emit<E.Room.Join, IRoom|null>('joinRoom', {
       id: this.props.id,
-    }, (room: IRoom | null) => {
+      user: {
+        name,
+        color,
+      }
+    }, (room) => {
       this.props.modifier.roomEvent(room);
     });
   }

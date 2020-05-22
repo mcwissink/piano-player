@@ -7,6 +7,10 @@ export namespace Events {
     export interface Update extends Create {};
     export interface Join {
       id: string;
+      user: {
+        name: string;
+        color: string;
+      }
     }
   }
   export namespace Piano {

@@ -2,6 +2,7 @@ import React from "react";
 import update from 'immutability-helper';
 import { withRouter, RouteComponentProps } from 'react-router-dom';
 import { ITheme, IAppContext, withContext, SafeSocket } from '../App';
+import { Events as E } from '../../../server/interfaces/IEvents';
 import Button from "./Button";
 
 interface IRoomSettingsState {
@@ -49,14 +50,10 @@ class RoomSettings extends React.PureComponent<IProps, IRoomSettingsState> {
     const parsedName = name.trim();
     if (this.canSubmit()) {
       if (this.props.modifier.noRoom()) {
-        socket.emit('settings', {
-          name: this.props.name,
-          color,
-        });
-        socket.emit('createRoom', {
+        socket.emit<E.Room.Create, string|undefined>('createRoom', {
           name: parsedName,
           theme,
-        }, (roomName?: string) => {
+        }, (roomName) => {
           if (roomName !== undefined) {
             this.props.history.push(`/room/${encodeURIComponent(roomName)}`);
           }

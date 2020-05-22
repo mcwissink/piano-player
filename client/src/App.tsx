@@ -217,7 +217,13 @@ class AppModifier {
   }
 
   onLeaveRoom = () => {
-    this.app.socket.emit<E.Room.Join>('joinRoom', { id: '' }, () => {});
+    this.app.socket.emit<E.Room.Join>('joinRoom', {
+      id: '',
+      user: {
+        name: this.app.state.name,
+        color: this.app.state.color,
+      }
+    }, () => {});
     this.app.setState(oldState => update(oldState, {
       room: {
         name: { $set: '' },
