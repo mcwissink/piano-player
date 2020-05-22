@@ -3,6 +3,7 @@ import MidiPlayer from "./MidiPlayer";
 import { SafeSocket } from '../../App';
 import { Events as E } from '../../../../server/interfaces/IEvents';
 import { keyMap } from '../../util';
+import instruments from '../../instruments.json';
 
 
 export interface IActiveNote extends E.Piano.NoteOn {
@@ -63,7 +64,19 @@ export default class MidiController {
   }
 
   setInstrument(instrument: string) {
-    this.player.loadSoundfont(instrument);
+    const instrumentId = instruments.indexOf(instrument);
+    if (instrumentId === -1) {
+      return;
+    }
+    const controlchange: E.Piano.ControlChange = {
+      id: this.socket.raw.id,
+      control: {
+        number: 102,
+        value: instrumentId,
+      }
+    };
+    this.controlchangeEvent(controlchange);
+    this.socket.emit('controlchange', controlchange);
   }
 
   connect(name: string) {
@@ -165,7 +178,10 @@ export default class MidiController {
           this.sustain = false;
           Object.values(this.sustainedNotes).forEach(note => this.noteoffEvent(note)); 
         }
-      }
+      };
+      case 102: {
+        this.player.loadSoundfont(e.control.value);
+      };
     }
   }
 

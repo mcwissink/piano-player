@@ -1,21 +1,24 @@
-import Soundfont from "soundfont-player"
+import Soundfont from 'soundfont-player'
 import { Events as E } from '../../../../server/interfaces/IEvents';
+import instruments from '../../instruments.json'
 
 export default class MidiPlayer {
   soundfont: Soundfont.Player | null;
   activeNotes: {[note: number]: Soundfont.Player | undefined};
+  ctx: AudioContext = new AudioContext();
   constructor() {
     this.soundfont = null;
     this.activeNotes = {};
     this.loadSoundfont('acoustic_grand_piano');
   }
 
-  async loadSoundfont(instrument: string) {
+  async loadSoundfont(identifier: string | number) {
     try {
       // The typings for Soundfont stink, how to fix
-      this.soundfont = await Soundfont.instrument((new AudioContext()) as any, instrument as any);
+      const instrument = typeof identifier === 'string' ? identifier : instruments[identifier];
+      this.soundfont = await Soundfont.instrument((this.ctx) as any, instrument as any);
     } catch (e) {
-      console.log('failed');
+      console.log(`Failed to load instrument: ${instruments}`);
     }
   }
 
