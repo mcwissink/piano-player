@@ -123,7 +123,6 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
     return (
       <>
         <canvas onFocus={() => console.log('focus')} onBlur={() => console.log('blur')} style={{ display: 'block', height: '100%' }} ref={this.setup} />
-        <hr/>
         {room.permissions.admin ? (
           <div>
             <select value={device} onChange={this.handleDeviceSelect}>
