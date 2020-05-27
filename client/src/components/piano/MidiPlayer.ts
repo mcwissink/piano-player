@@ -28,7 +28,7 @@ export default class MidiPlayer {
       if (note !== undefined) {
         note.stop();
       }
-      this.activeNotes[e.note.number] = this.soundfont.play(e.note.number.toString(), undefined, { gain: e.note.velocity / 127 });
+      this.activeNotes[e.note.number] = this.soundfont.play(e.note.number.toString(), undefined, { gain: e.note.velocity });
     }
   }
 

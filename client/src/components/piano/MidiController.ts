@@ -109,7 +109,7 @@ export default class MidiController {
       color: this.noteColor,
       note: {
         number: note,
-        velocity: 100,
+        velocity: 0.85,
       }
     };
     this.noteonEvent(noteon);
@@ -146,6 +146,7 @@ export default class MidiController {
   }
 
   noteon = (e: WebMidi.InputEventNoteon) => {
+    console.log(e);
     const noteon: E.Piano.NoteOn = {
       id: this.socket.raw.id,
       color: this.noteColor,
@@ -154,6 +155,7 @@ export default class MidiController {
         velocity: e.velocity,
       }
     };
+    console.log(noteon);
     this.noteonEvent(noteon);
     this.socket.emit('noteon', noteon);
   }
