@@ -1,10 +1,14 @@
+import { Room as R} from './IRoom';
+
 export namespace Events {
   export namespace Room {
     export interface Create {
       name: string;
+      theme: R.Theme;
+    };
+    export interface Update {
       theme: any;
     };
-    export interface Update extends Create {};
     export interface Join {
       id: string;
       user: {

@@ -2,6 +2,7 @@ import express from 'express';
 import http from 'http';
 import socket from 'socket.io';
 import path from 'path';
+import uid from 'uid';
 const app = express();
 const server = new http.Server(app);
 const io = socket(server);
@@ -62,6 +63,7 @@ interface IRoom {
   permissions: Map<string, IPermissions>; 
   users: Set<string>;
   theme: ITheme;
+  private: boolean;
 }
 
 
@@ -73,7 +75,7 @@ class RoomManager {
   }
 
   emitRoomList() {
-    io.emit('roomList', Array.from(this.rooms.values()).map(room => this.getRoomListItem(room)));
+    io.emit('roomList', Array.from(this.rooms.values()).filter(room => !room.private).map(room => this.getRoomListItem(room)));
   }
 
   emitRoomUpdate(room: IRoom) {
@@ -115,6 +117,7 @@ class RoomManager {
       name: room.name,
       theme: room.theme,
       players: this.getRoomGroup(room, 'play'),
+      private: false,
     };
   }
 
@@ -161,16 +164,19 @@ class RoomManager {
   // TODO: handle the case when two rooms are submitting at the same time with the same name
   createRoom(user: User, name: string, theme: ITheme) {
     this.leaveRoom(user);
+    const isPrivate = name === '';
+    const nameId = isPrivate ? uid(8) : name;
     if (!this.rooms.has(name)) {
       const room = {
-        id: name, 
-        name,
+        id: nameId, 
+        name: nameId,
         likes: 0,
         permissions: new Map([[user.getId(), { play: true, admin: true }]]),
         users: new Set<string>(),
         theme: theme,
+        private: isPrivate,
       };
-      this.rooms.set(name, room);
+      this.rooms.set(room.id, room);
       this.emitRoomList();
       return this.getRoomData(room, user).name;
     }
