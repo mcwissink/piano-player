@@ -1,39 +1,41 @@
 /* Globals */
 @import url('https://fonts.googleapis.com/css?family=Montserrat:400,700,900&display=swap');
-html, body, #root, #piano-page-background {
+html, body, #root {
   height: 100%;
   font-family: 'Montserrat', sans-serif;
-  background: #171717;
+  position: relative;
 }
 
+html {
+  background: #171717;
+}
 #header-logo-text {
   font-weight: 900;
   color: white;
   letter-spacing: 0.1em;
 }
 
-#piano-page-background-mask {
-  /* Can't use shorthand for background property values b/c styles compete with the custom bg image */
-  position: fixed;
-  left: 0;
-  right: 0;
-  z-index: 1;
-  transform: scale(1.1);
-  height: 100%;
-}
-
-#piano-page-background-mask > div {
+#piano-page-background, #piano-page-background-mask {
   position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
   background-size: cover;
   background-repeat: no-repeat;
   background-position-x: center;
   background-position-y: center;
   background-attachment: fixed;
-  height: 100%;
   width: 100%;
+  height: 100%;
 }
 
-#piano-page-background-2 {
+#piano-page-background {
+  z-index: -2;
+}
+
+#piano-page-background-mask {
+  z-index: -1;
   background-color: #0000008a;
   /* -webkit-mask: -webkit-linear-gradient(0.25turn, black, transparent 50%, black); */
   /* -webkit-mask: linear-gradient(0.5turn, black, transparent 50%, black); */

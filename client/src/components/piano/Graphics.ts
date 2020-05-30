@@ -80,6 +80,7 @@ export default class PianoGrahpics {
 
   resize() {
     this.keyWidth = this.canvas.width / 52;
+    this.keyHeight = this.keyWidth * 10; 
     this.topOfPiano = this.canvas.height - this.keyHeight;
   }
 

@@ -152,10 +152,8 @@ class App extends React.PureComponent<RouteComponentProps, IAppState> {
         modifier: this.modifier,
         ...this.state,
       }}>
-        {/* <div id='piano-page-background-mask'>
-            <div id='piano-page-background' style={{ backgroundImage: `url(${this.state.theme.image})`}} />
-            <div id='piano-page-background-2' />
-            </div> */}
+        <div id='piano-page-background-mask' />
+        <div id='piano-page-background' style={{ backgroundImage: `url(${this.state.theme.image})`}} />
         <div style={{ display: 'flex', flexDirection: 'row', height: '100%' }}>
           <BrowserView>
             {this.header()}

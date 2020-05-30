@@ -21,7 +21,6 @@ class Room extends React.PureComponent<IProps, IRoomState> {
 
   componentDidMount() {
     const {
-      id,
       name,
       color,
       socket
@@ -99,7 +98,7 @@ class Room extends React.PureComponent<IProps, IRoomState> {
             {room.permissions.admin ? <RoomSettings roomName={room.name} /> : null}
           </div>
         </div>
-        <div style={{ alignSelf: 'flex-end' }}>
+        <div style={{ alignSelf: 'flex-end'}}>
           <BrowserView>
             <Chat/>
           </BrowserView>

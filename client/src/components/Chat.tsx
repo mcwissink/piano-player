@@ -94,15 +94,15 @@ class Chat extends React.PureComponent<IProps, IChatState> {
       message,
     } = this.state;
     return (
-      <div id="chat-container" style={{display: 'flex', flex: 1, overflow: 'auto', flexDirection: 'column'}}>
-        <div id="scrolly" style={{display: 'flex', flex: 1, overflow: 'auto', flexDirection: 'column', width: '100%'}}>
+      <div id="chat-container" style={{display: 'flex', overflow: 'auto', flexDirection: 'column'}}>
+        <div id="scrolly" style={{display: 'flex', overflow: 'auto', flexDirection: 'column', width: '100%'}}>
           {/* Making scrolling work with flexbox, flexbox spec author, "this is a bug."  https://stackoverflow.com/a/21541021/2930176 */}
           <div style={{display: 'flex', minHeight: 'min-content', alignItems: 'flex-start', flexDirection: 'column', marginTop: 'auto'}}>
             {room.chat.map((c, i) => this.renderChatMessage(c, i))}
           </div>
         </div>
-        <form onSubmit={this.onMessageSubmit} style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', width: '100%' }}>
-          <input onFocus={modifier.disablePiano} onBlur={modifier.enablePiano} placeholder="Send a message" style={{ marginRight: '1em', flexGrow: 1 }} type="text" value={message} onChange={this.onMessageChange} />
+        <form onSubmit={this.onMessageSubmit} style={{ display: 'flex', flexDirection: 'row', width: '100%' }}>
+          <input onFocus={modifier.disablePiano} onBlur={modifier.enablePiano} placeholder="Send a message" type="text" value={message} onChange={this.onMessageChange} />
           <Button type="submit" value="Send" />
         </form>
       </div>
