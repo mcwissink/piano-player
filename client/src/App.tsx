@@ -3,6 +3,7 @@ import io from 'socket.io-client';
 import update from 'immutability-helper';
 import { Link, Switch, Route, RouteComponentProps, withRouter, Router, BrowserRouter } from 'react-router-dom';
 import './App.css';
+import { isMobile, BrowserView } from 'react-device-detect';
 
 import RoomList from './components/RoomList';
 import { createBrowserHistory } from "history";
@@ -77,7 +78,7 @@ export interface IAppContext extends IAppPartialContext {
 const initialState = {
   rooms: [],
   name: '',
-  color: "#000000".replace(/0/g, () => (~~(Math.random()*16)).toString(16)),
+  color: '#000000'.replace(/0/g, () => (~~(Math.random()*16)).toString(16)),
   room: {
     permissions: { admin: false, play: false },
     name: '',
@@ -118,7 +119,7 @@ class App extends React.PureComponent<RouteComponentProps, IAppState> {
       this.socket.raw.io.opts.transports = ['polling', 'websocket'];
     });
     this.socket.on('connect_error', e => console.log(e));
-    this.socket.on('connect', () => console.log("connected"));
+    this.socket.on('connect', () => console.log('connected'));
     this.socket.on('chat', this.modifier.chatEvent);
     this.socket.on('roomList', this.modifier.roomListEvent);
     this.socket.on('roomUpdate', this.modifier.roomEvent);
@@ -129,9 +130,21 @@ class App extends React.PureComponent<RouteComponentProps, IAppState> {
     });
   };
 
+  header = () => (
+    <Link to={`/`}>
+      <h1>Keyboard.Cafe</h1>
+    </Link>
+  );
   
   routeRoom = ({ match }: RouteComponentProps<{ id: string }>) => <Room id={match.params.id} />;
-  homePage = () => <Home/>;
+  homePage = () => isMobile ? (
+    <div>
+      {this.header()}
+      <RoomList />
+    </div>
+  ) : (
+    <Home />
+  );
   render() {
     return (
       <AppContext.Provider value={{
@@ -139,22 +152,18 @@ class App extends React.PureComponent<RouteComponentProps, IAppState> {
         modifier: this.modifier,
         ...this.state,
       }}>
-        <div id="piano-page-background-mask">
-          <div id="piano-page-background" style={{ backgroundImage: `url(${this.state.theme.image})`}} />
-          <div id="piano-page-background-2" />
-        </div>
-        <div id="content">
-          <div id="header">
-            <Link to={`/`}>
-              <h1>Keyboard.Cafe</h1>
-            </Link>
-          </div>
-          <div id="roomlist-container">
+        {/* <div id='piano-page-background-mask'>
+            <div id='piano-page-background' style={{ backgroundImage: `url(${this.state.theme.image})`}} />
+            <div id='piano-page-background-2' />
+            </div> */}
+        <div style={{ display: 'flex', flexDirection: 'row', height: '100%' }}>
+          <BrowserView>
+            {this.header()}
             <RoomList />
-          </div>
+          </BrowserView>
           <Switch>
-            <Route path="/room/:id" component={this.routeRoom} />
-            <Route path="/" exact={true} component={this.homePage} />
+            <Route path='/room/:id' component={this.routeRoom} />
+            <Route path='/' exact={true} component={this.homePage} />
           </Switch>
         </div>
       </AppContext.Provider>

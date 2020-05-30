@@ -5,6 +5,7 @@ import RoomSettings from '../components/RoomSettings';
 import Chat from '../components/Chat';
 import Piano from "../components/Piano";
 import { Events as E } from '../../../server/interfaces/IEvents';
+import { BrowserView } from 'react-device-detect';
 
 interface IRoomProps {
   id: string;
@@ -91,11 +92,18 @@ class Room extends React.PureComponent<IProps, IRoomState> {
             {room.players.map(this.renderUser)}
             </div> 
             </div> */}
-        <div id="room" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between'}}>
-          <Piano />
-          {room.permissions.admin ? <RoomSettings roomName={room.name} /> : null}
+        <div id="room" style={{ minWidth: 0, width: '100%', height: '80%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div>
+
+            <Piano />
+            {room.permissions.admin ? <RoomSettings roomName={room.name} /> : null}
+          </div>
         </div>
-        <Chat />
+        <div style={{ alignSelf: 'flex-end' }}>
+          <BrowserView>
+            <Chat/>
+          </BrowserView>
+        </div>
       </>
     )
   }

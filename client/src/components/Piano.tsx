@@ -103,10 +103,17 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
   resizeCanvas = () => {
     // Make it visually fill the positioned parent
     if (this.canvas !== undefined) {
-      this.canvas.width = this.canvas.offsetWidth;
-      this.canvas.height = this.canvas.offsetHeight;
-      if (this.graphics !== undefined) {
-        this.graphics.resize();
+      const container = document.getElementById('room');
+      if (container !== null) {
+        /* this.canvas.width = this.canvas.offsetWidth;
+         * this.canvas.height = this.canvas.offsetHeight; */
+        const { width, height } = container.getBoundingClientRect();
+        const size = Math.min(width, height);
+        this.canvas.width = size;
+        this.canvas.height = size;
+        if (this.graphics !== undefined) {
+          this.graphics.resize();
+        }
       }
     }
   }
@@ -122,7 +129,7 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
     } = this.props;
     return (
       <>
-        <canvas onFocus={() => console.log('focus')} onBlur={() => console.log('blur')} style={{ display: 'block', height: '100%' }} ref={this.setup} />
+        <canvas ref={this.setup} />
         {room.permissions.admin ? (
           <div>
             <select value={device} onChange={this.handleDeviceSelect}>

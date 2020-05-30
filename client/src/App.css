@@ -51,50 +51,61 @@ html, body, #root, #piano-page-background {
 /* } */
 
 /* Grid */
-#content {
-  display: grid;
-  grid-gap: 10px;
-  grid-template-columns: 1fr 2fr 1fr;
-  /* grid-template-columns: minmax(200px, 1fr) 2fr 0.8fr; */
-  /* grid-auto-rows: 70px 1fr; */
-  grid-template-rows: 70px 1fr 20px;
-  grid-gap: 10px;
-  position: fixed;
-  left: 0;
-  right: 0;
-  z-index: 10;
-  margin-left: 20px;
-  margin-right: 20px;
-  margin-bottom: 20px;
-  height: 100%;
-}
+/* #content { */
+/*   display: grid; */
+/*   grid-gap: 10px; */
+/*   grid-template-columns: 1fr 2fr 1fr; */
+/*   /\* grid-template-columns: minmax(200px, 1fr) 2fr 0.8fr; *\/ */
+/*   /\* grid-auto-rows: 70px 1fr; *\/ */
+/*   grid-template-rows: 70px 1fr 20px; */
+/*   grid-gap: 10px; */
+/*   position: fixed; */
+/*   left: 0; */
+/*   right: 0; */
+/*   z-index: 10; */
+/*   margin-left: 20px; */
+/*   margin-right: 20px; */
+/*   margin-bottom: 20px; */
+/*   height: 100%; */
+/* } */
 
 
-#header {
-  grid-column: 1 / 1;
-  grid-row: 1 / 1;
-}
+/* #header { */
+/*   grid-column: 1 / 1; */
+/*   grid-row: 1 / 1; */
+/* } */
 
-#roomlist-container {
-  grid-column: 1 / 1;
-  grid-row: 2 / 2;
-}
+/* #roomlist-container { */
+/*   grid-column: 1 / 1; */
+/*   grid-row: 2 / 2; */
+/* } */
 
-#room {
-  grid-column: 2 / 2;
-  grid-row: 2 / 2;
-}
+/* #room { */
+/*   grid-column: 2 / 2; */
+/*   grid-row: 2 / 2; */
+/* } */
 
-#room-header {
-  grid-column: 2 / 2;
-  grid-row: 1 / 1;
-}
+/* #room-header { */
+/*   grid-column: 2 / 2; */
+/*   grid-row: 1 / 1; */
+/* } */
 
-#chat-container {
-  grid-column: 3 / 3;
-  grid-row: 2 / 2;
-}
+/* #chat-container { */
+/*   grid-column: 3 / 3; */
+/*   grid-row: 2 / 2; */
+/* } */
 
+/* #room { */
+/*   flex: 1 0 auto; */
+/*   position: relative; */
+/* } */
+
+/* #room:after { */
+/*   content: ""; */
+/*   float:left; */
+/*   display: block; */
+/*   padding-top: 100%; */
+/* } */
 
 #sidebar-container {
   display: flex;

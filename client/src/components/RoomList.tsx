@@ -52,10 +52,13 @@ class RoomList extends React.PureComponent<IProps, IRoomState> {
     const {
       rooms,
     } = this.props;
+    const noRooms = !rooms.length;
     return (
       <div>
         <h2>Rooms</h2>
-        {rooms.sort((a, b) => b.viewers - a.viewers).map(r => this.renderRoomItem(r))}
+        {noRooms ? (
+          <span>It seems no one is playing</span>
+        ) : rooms.sort((a, b) => b.viewers - a.viewers).map(r => this.renderRoomItem(r))}
       </div>
     )
   }
