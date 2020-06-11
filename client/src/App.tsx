@@ -131,7 +131,7 @@ class App extends React.PureComponent<RouteComponentProps, IAppState> {
   };
 
   header = () => (
-    <Link to={`/`}>
+    <Link to={`/`} style={{ textDecoration: 'none' }}>
       <h1>Keyboard.Cafe</h1>
     </Link>
   );
@@ -229,7 +229,7 @@ class AppModifier {
       user: {
         name: this.app.state.name,
         color: this.app.state.color,
-      }
+      },
     }, () => {});
     this.app.setState(oldState => update(oldState, {
       room: {

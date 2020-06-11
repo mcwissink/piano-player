@@ -7,7 +7,7 @@ html, body, #root {
 }
 
 html {
-  background: #171717;
+  background: #444444;
 }
 #header-logo-text {
   font-weight: 900;
@@ -160,6 +160,10 @@ html {
 /* Text */
 h1, h2 {
   font-weight: 700;
+  color: white;
+}
+
+p {
   color: white;
 }
 

@@ -57,6 +57,8 @@ export default class PianoGrahpics {
   topOfPiano: number;
   keyWidth: number;
   keyHeight: number;
+  offsetX: number;
+  offsetY: number;
   theme: ITheme;
   gradients: {[id: string]: CanvasGradient} = {};
   constructor(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, theme: ITheme) {
@@ -67,10 +69,12 @@ export default class PianoGrahpics {
     this.activeDrawNotes = {};
     // pastDrawNotes updates the notes that have been released. Scrolling them into the distance
     this.pastDrawNotes = [];
-    this.keyWidth = this.canvas.width / 52;
+    this.keyWidth = this.canvas.width / 54;
     this.keyHeight = this.keyWidth * 10; 
+    this.offsetX = this.keyWidth;
+    this.offsetY = this.keyWidth;
     // Set top of keyboard with some padding
-    this.topOfPiano = this.canvas.height - this.keyHeight;
+    this.topOfPiano = this.canvas.height - this.keyHeight - this.offsetY;
     this.theme = theme;
   }
 
@@ -105,13 +109,15 @@ export default class PianoGrahpics {
   }
 
   drawPiano(activeNotes: ActiveNotes) {
+    // Draw the background
+    this.drawBackground();
     // Draw the white keys first
     let whiteNotePosition = 0;
     for (let i = 0; i < 88; i++) {
       const note = activeNotes[i + 21];
       const keyInOctave = i % 12;
       if (this.WHITE_KEYS.indexOf(keyInOctave) !== -1) {
-        const x = whiteNotePosition * this.keyWidth;
+        const x = (whiteNotePosition * this.keyWidth) + this.offsetX;
         this.drawWhiteKey(x, this.topOfPiano, note);
         whiteNotePosition++;
         // Handle drawing the notes
@@ -136,7 +142,7 @@ export default class PianoGrahpics {
       const note = activeNotes[i + 21];
       const keyInOctave = i % 12;
       if (this.BLACK_KEYS.indexOf(keyInOctave) !== -1) {
-        const x = (blackNotePosition * this.keyWidth) + (this.keyWidth/2)
+        const x = (blackNotePosition * this.keyWidth) + (this.keyWidth/2) + this.offsetX;
         this.drawBlackKey(x, this.topOfPiano, note);
         blackNotePosition += (keyInOctave === this.BLACK_KEYS[0] || keyInOctave === this.BLACK_KEYS[2]) ? 2 : 1;
         // Handle drawing the notes
@@ -158,6 +164,11 @@ export default class PianoGrahpics {
         }
       }
     }
+  }
+
+  drawBackground() {
+    this.ctx.fillStyle = this.theme.secondary; 
+    this.ctx.fillRect(0, this.topOfPiano - this.offsetY/2, this.canvas.width, this.keyHeight + this.offsetY * 2);
   }
 
   drawBlackKey(x: number, y: number, note: IActiveNote) {

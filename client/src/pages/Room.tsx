@@ -25,6 +25,13 @@ class Room extends React.PureComponent<IProps, IRoomState> {
       color,
       socket
     } = this.props;
+    console.log({
+      id: this.props.id,
+      user: {
+        name,
+        color,
+      }
+    });
     socket.emit<E.Room.Join, IRoom|null>('joinRoom', {
       id: this.props.id,
       user: {
@@ -41,9 +48,19 @@ class Room extends React.PureComponent<IProps, IRoomState> {
   }
 
   componentDidUpdate(prevProps: IProps) {
-    if (this.props.id !== prevProps.id) {
-      this.props.socket.emit('joinRoom', {
-        id: this.props.id,
+    const {
+      id,
+      name,
+      color,
+      socket,
+    } = this.props;
+    if (id !== prevProps.id) {
+      socket.emit<E.Room.Join, IRoom|null>('joinRoom', {
+        id,
+        user: {
+          name,
+          color,
+        }
       }, (room: IRoom|null) => {
         this.props.modifier.roomEvent(room);
       });

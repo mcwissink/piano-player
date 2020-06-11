@@ -241,6 +241,7 @@ io.on('connection', socket => {
   });
 
   socket.on('joinRoom', (e: E.Room.Join, callback) => {
+    console.log(e);
     user.name = e.user.name === '' ? user.name : e.user.name;
     user.color = e.user.color;
     callback(roomManager.joinRoom(e.id, user));
