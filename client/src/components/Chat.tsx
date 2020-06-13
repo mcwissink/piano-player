@@ -60,10 +60,7 @@ class Chat extends React.PureComponent<IProps, IChatState> {
 
 
   renderChatMessage = (chat: IChat, i: number) => {
-    const {
-      room,
-      modifier,
-    } = this.props;
+    /*
     const actionButton = (() => {
       const words = new Set(chat.message.split(/\W+/).map(word => word.toLowerCase()));
       // Check if the person wants to play the piano
@@ -77,6 +74,7 @@ class Chat extends React.PureComponent<IProps, IChatState> {
       }
       return null;
     })();
+    */
     return (
       <div key={i} style={{background: '#000000d6', color: 'white', padding: '0.5em', marginBottom: '0.5em', borderRadius: 6, display: 'inline-block', maxWidth: '20em'}}>
         <span><span style={{ color: chat.user.color }}>{chat.user.name}</span>: {chat.message}</span>

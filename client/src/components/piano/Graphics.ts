@@ -69,13 +69,14 @@ export default class PianoGrahpics {
     this.activeDrawNotes = {};
     // pastDrawNotes updates the notes that have been released. Scrolling them into the distance
     this.pastDrawNotes = [];
-    this.keyWidth = this.canvas.width / 54;
-    this.keyHeight = this.keyWidth * 10; 
-    this.offsetX = this.keyWidth;
-    this.offsetY = this.keyWidth;
     // Set top of keyboard with some padding
-    this.topOfPiano = this.canvas.height - this.keyHeight - this.offsetY;
     this.theme = theme;
+    this.topOfPiano = 0;
+    this.keyWidth = 0;
+    this.keyHeight = 0;
+    this.offsetX = 0;
+    this.offsetY = 0;
+    this.resize();
   }
 
   setTheme(theme: ITheme) {
@@ -83,9 +84,11 @@ export default class PianoGrahpics {
   }
 
   resize() {
-    this.keyWidth = this.canvas.width / 52;
+    this.keyWidth = this.canvas.width / 54;
     this.keyHeight = this.keyWidth * 10; 
-    this.topOfPiano = this.canvas.height - this.keyHeight;
+    this.topOfPiano = this.canvas.height - this.keyHeight - this.offsetY - 10;
+    this.offsetX = this.keyWidth;
+    this.offsetY = this.keyWidth;
   }
 
   draw(activeNotes: ActiveNotes) {
@@ -168,7 +171,9 @@ export default class PianoGrahpics {
 
   drawBackground() {
     this.ctx.fillStyle = this.theme.secondary; 
-    this.ctx.fillRect(0, this.topOfPiano - this.offsetY/2, this.canvas.width, this.keyHeight + this.offsetY * 2);
+    this.ctx.strokeStyle = this.theme.secondary;
+    this.roundRect(0, this.topOfPiano - this.offsetY/1.5, this.canvas.width, this.keyHeight + this.offsetY * 2, 10);
+    // this.ctx.fillRect(0, this.topOfPiano - this.offsetY/2, this.canvas.width, this.keyHeight + this.offsetY * 2);
   }
 
   drawBlackKey(x: number, y: number, note: IActiveNote) {
@@ -199,5 +204,19 @@ export default class PianoGrahpics {
       this.gradients[id].addColorStop(1, `rgb(${r},${g},${b})`)
     }
     return this.gradients[id];
+  }
+
+  roundRect = (x: number, y: number, w: number, h: number, r: number) => {
+    if (w < 2 * r) r = w / 2;
+    if (h < 2 * r) r = h / 2;
+    this.ctx.beginPath();
+    this.ctx.moveTo(x+r, y);
+    this.ctx.arcTo(x+w, y,   x+w, y+h, r);
+    this.ctx.arcTo(x+w, y+h, x,   y+h, r);
+    this.ctx.arcTo(x,   y+h, x,   y,   r);
+    this.ctx.arcTo(x,   y,   x+w, y,   r);
+    this.ctx.closePath();
+    this.ctx.fill();
+    this.ctx.stroke();
   }
 }

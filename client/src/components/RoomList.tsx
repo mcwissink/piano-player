@@ -12,10 +12,6 @@ interface IRoomState {
 
 type IProps = IRoomProps & IAppContext & RouteComponentProps;
 class RoomList extends React.PureComponent<IProps, IRoomState> {
-  constructor(props: IProps) {
-    super(props);
-  }
-
   renderRoomItem = (room: IRoomListItem) => {
     return (
       <div key={room.id} style={{display: 'flex', alignItems: 'center', marginBottom: '0.5em'}}>

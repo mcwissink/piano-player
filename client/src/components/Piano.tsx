@@ -1,7 +1,6 @@
 import React from "react";
 import MidiController from "./piano/MidiController"
 import PianoGraphics from './piano/Graphics';
-import * as WebMidi from "webmidi";
 import { IAppContext, withContext } from '../App';
 import instruments from '../instruments.json';
 

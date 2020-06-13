@@ -1,7 +1,7 @@
 import React from "react";
 import update from 'immutability-helper';
 import { withRouter, RouteComponentProps } from 'react-router-dom';
-import { ITheme, IAppContext, withContext, SafeSocket } from '../App';
+import { ITheme, IAppContext, withContext } from '../App';
 import { Events as E } from '../../../server/interfaces/IEvents';
 import Button from "./Button";
 
@@ -33,8 +33,6 @@ class RoomSettings extends React.PureComponent<IProps, IRoomSettingsState> {
   onRoomSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const {
-      color,
-      modifier,
       socket,
     } = this.props;
     const {
@@ -84,7 +82,6 @@ class RoomSettings extends React.PureComponent<IProps, IRoomSettingsState> {
     const {
       theme,
     } = this.state;
-    const noRoom = this.props.modifier.noRoom();
     return (
       <div>
         <form onSubmit={this.onRoomSubmit} style={{ display: 'flex', alignItems: 'center' }}>

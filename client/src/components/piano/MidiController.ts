@@ -173,17 +173,17 @@ export default class MidiController {
 
   controlchangeEvent = (e: E.Piano.ControlChange) => {
     switch (e.control.number) {
-      case 64: { //Sustain pedal
+      case 64: //Sustain pedal
         if (e.control.value > 0) {
           this.sustain = true;
         } else {
           this.sustain = false;
           Object.values(this.sustainedNotes).forEach(note => this.noteoffEvent(note)); 
         }
-      };
-      case 102: {
+        break;
+      case 102:
         this.player.loadSoundfont(e.control.value);
-      };
+        break;
     }
   }
 

@@ -15,10 +15,6 @@ interface IRoomState {
 }
 type IProps = IRoomProps & IAppContext & RouteComponentProps;
 class Room extends React.PureComponent<IProps, IRoomState> {
-  constructor(props: IProps) {
-    super(props);
-  }
-
   componentDidMount() {
     const {
       name,
@@ -114,6 +110,9 @@ class Room extends React.PureComponent<IProps, IRoomState> {
             <Piano />
             {room.permissions.admin ? <RoomSettings roomName={room.name} /> : null}
           </div>
+          {/* <MobileView>
+              <Chat/>
+              </MobileView> */}
         </div>
         <div style={{ alignSelf: 'flex-end'}}>
           <BrowserView>
@@ -121,7 +120,7 @@ class Room extends React.PureComponent<IProps, IRoomState> {
           </BrowserView>
         </div>
       </>
-    )
+    );
   }
 }
 

@@ -7,10 +7,6 @@ interface ISettingsProps {
 
 type IProps = ISettingsProps & IAppContext;
 class Settings extends React.PureComponent<IProps> {
-  constructor(props: IProps) {
-    super(props);
-  }
-  
   render() {
     const {
       name,
