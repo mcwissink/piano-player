@@ -12,6 +12,7 @@ interface IPianoState {
   instrument: string;
   device: string;
   devices: string[];
+  recording: boolean;
 }
 
 type IProps = IPianoProps & IAppContext
@@ -27,6 +28,7 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
       instrument:'acoustic_grand_piano',
       device: '',
       devices: [],
+      recording: false,
     };
     this.midi = new MidiController(this.props.socket, this.props.color, this.state.instrument);
   }
@@ -99,6 +101,11 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
     this.setState({ instrument });
   }
 
+  handleRecord = (e: React.MouseEvent<HTMLButtonElement>) => {
+    this.midi.record();
+    this.setState({ recording: !this.state.recording });
+  }
+
   resizeCanvas = () => {
     // Make it visually fill the positioned parent
     if (this.canvas !== undefined) {
@@ -122,6 +129,7 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
       device,
       devices,
       instrument,
+      recording,
     } = this.state;
     const {
       room,
@@ -129,6 +137,7 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
     return (
       <>
         <canvas ref={this.setup} />
+        <button onClick={this.handleRecord}>{recording ? 'Recording' : 'Record'}</button>
         {room.permissions.admin ? (
           <div>
             <select value={device} onChange={this.handleDeviceSelect}>

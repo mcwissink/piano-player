@@ -1,10 +1,10 @@
-import * as WebMidi from "webmidi";
-import MidiPlayer from "./MidiPlayer";
+import * as WebMidi from 'webmidi';
+import MidiPlayer from './MidiPlayer';
 import { SafeSocket } from '../../App';
 import { Events as E } from '../../../../server/interfaces/IEvents';
 import { keyMap } from '../../util';
 import instruments from '../../instruments.json';
-
+import MidiWriter from 'midi-writer-js';
 
 export interface IActiveNote extends E.Piano.NoteOn {
   sustain?: true;
@@ -17,6 +17,8 @@ type DeviceCallback = (devices: string[]) => void;
 export default class MidiController {
   static COMPUTER_INPUT = "Default";
   midi: WebMidi.WebMidi;
+  track: any;
+  previousEventTick: number = 0;
   player: MidiPlayer;
   input: WebMidi.Input | null;
   activeNotes: ActiveNotes;
@@ -110,6 +112,7 @@ export default class MidiController {
       note: {
         number: note,
         velocity: 0.85,
+        timeStamp: this.midi.time,
       }
     };
     this.noteonEvent(noteon);
@@ -127,6 +130,7 @@ export default class MidiController {
       id: this.socket.raw.id,
       note: {
         number: note,
+        timeStamp: this.midi.time,
       }
     };
     this.noteoffEvent(noteoff);
@@ -153,9 +157,9 @@ export default class MidiController {
       note: {
         number: e.note.number,
         velocity: e.velocity,
+        timeStamp: e.timestamp,
       }
     };
-    console.log(noteon);
     this.noteonEvent(noteon);
     this.socket.emit('noteon', noteon);
   }
@@ -165,6 +169,7 @@ export default class MidiController {
       id: this.socket.raw.id,
       note: {
         number: e.note.number,
+        timeStamp: e.timestamp,
       }
     };
     this.noteoffEvent(noteoff);
@@ -191,12 +196,30 @@ export default class MidiController {
     delete this.sustainedNotes[e.note.number];
     this.player.noteon(e);
     this.activeNotes[e.note.number] = e;
+    if (this.track) {
+      if (!this.previousEventTick) {
+        this.previousEventTick = e.note.timeStamp;
+      }
+      this.track.addEvent(new MidiWriter.NoteOnEvent({
+        pitch: e.note.number,
+        velocity: e.note.velocity,
+        wait: `T${e.note.timeStamp - this.previousEventTick}`,
+      }));
+      this.previousEventTick = e.note.timeStamp;
+    }
   }
 
   noteoffEvent = (e: E.Piano.NoteOff) => {
     if (this.sustain) {
       this.sustainedNotes[e.note.number] = e;
     } else {
+      if (this.track) {
+        this.track.addEvent(new MidiWriter.NoteOffEvent({
+          pitch: e.note.number,
+          duration: `T${e.note.timeStamp - this.previousEventTick}`,
+        }));
+        this.previousEventTick = e.note.timeStamp;
+      }
       this.player.noteoff(e);
       delete this.activeNotes[e.note.number];
     }
@@ -207,6 +230,17 @@ export default class MidiController {
     window.removeEventListener("keyup", this.handleKeyUp);
     if (this.input !== null) {
       this.input.removeListener();
+    }
+  }
+
+  record() {
+    if (this.track) {
+      const file = new MidiWriter.Writer(this.track);
+      console.log(file.dataUri());
+      delete this.track;
+    } else {
+      this.track = new MidiWriter.Track();
+      this.previousEventTick = 0;
     }
   }
 }	

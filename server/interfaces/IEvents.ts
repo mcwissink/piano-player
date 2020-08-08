@@ -24,12 +24,14 @@ export namespace Events {
       note: {
         number: number,
         velocity: number,
+        timeStamp: number,
       };
     }
     export interface NoteOff {
       id: string;
       note: {
         number: number,
+        timeStamp: number,
       };
     }
     export interface ControlChange {

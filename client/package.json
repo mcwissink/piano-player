@@ -8,6 +8,7 @@
     "@types/react": "16.8.22",
     "@types/react-dom": "16.8.4",
     "immutability-helper": "^3.0.1",
+    "midi-writer-js": "^1.7.4",
     "react": "^16.8.6",
     "react-device-detect": "^1.12.1",
     "react-dom": "^16.8.6",

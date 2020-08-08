@@ -21,13 +21,6 @@ class Room extends React.PureComponent<IProps, IRoomState> {
       color,
       socket
     } = this.props;
-    console.log({
-      id: this.props.id,
-      user: {
-        name,
-        color,
-      }
-    });
     socket.emit<E.Room.Join, IRoom|null>('joinRoom', {
       id: this.props.id,
       user: {
