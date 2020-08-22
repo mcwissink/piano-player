@@ -15,8 +15,15 @@ export type SustainedNotes = {[note: number]: E.Piano.NoteOff};
 
 type DeviceCallback = (devices: string[]) => void;
 export default class MidiController {
-  static COMPUTER_INPUT = "Default";
+  static COMPUTER_INPUT = 'Default';
   midi: WebMidi.WebMidi;
+  midiFile: string = '';
+  eventHistory: Array<{
+    deltaTime: string;
+    event: 'noteon'|'noteoff';
+    velocity: number;
+    pitch: number;
+  }> = [];
   track: any;
   previousEventTick: number = 0;
   player: MidiPlayer;
@@ -150,7 +157,6 @@ export default class MidiController {
   }
 
   noteon = (e: WebMidi.InputEventNoteon) => {
-    console.log(e);
     const noteon: E.Piano.NoteOn = {
       id: this.socket.raw.id,
       color: this.noteColor,
@@ -196,6 +202,12 @@ export default class MidiController {
     delete this.sustainedNotes[e.note.number];
     this.player.noteon(e);
     this.activeNotes[e.note.number] = e;
+    this.eventHistory.push({
+      pitch: e.note.number,
+      velocity: e.note.velocity,
+      event: 'noteon',
+      deltaTime: `T${e.note.timeStamp - this.previousEventTick}`,
+    });
     if (this.track) {
       if (!this.previousEventTick) {
         this.previousEventTick = e.note.timeStamp;
@@ -213,6 +225,12 @@ export default class MidiController {
     if (this.sustain) {
       this.sustainedNotes[e.note.number] = e;
     } else {
+      this.eventHistory.push({
+        pitch: e.note.number,
+        velocity: 0,
+        event: 'noteoff',
+        deltaTime: `T${e.note.timeStamp - this.previousEventTick}`,
+      });
       if (this.track) {
         this.track.addEvent(new MidiWriter.NoteOffEvent({
           pitch: e.note.number,
@@ -236,7 +254,7 @@ export default class MidiController {
   record() {
     if (this.track) {
       const file = new MidiWriter.Writer(this.track);
-      console.log(file.dataUri());
+      this.midiFile = file.dataUri();
       delete this.track;
     } else {
       this.track = new MidiWriter.Track();
