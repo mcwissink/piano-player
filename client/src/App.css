@@ -167,6 +167,12 @@ p {
   color: white;
 }
 
+a {
+  color: inherit;
+  text-decoration: inherit;
+}
+   
+
 /* Forms */
 /* input[type='submit'], .button { */
 /*   display: inline-flex; */
