@@ -66,7 +66,6 @@ interface IRoom {
   private: boolean;
 }
 
-
 const users = new Map<string, User>();
 class RoomManager {
   rooms: Map<string, IRoom>;
@@ -161,8 +160,7 @@ class RoomManager {
     });
   }
 
-  // TODO: handle the case when two rooms are submitting at the same time with the same name
-  createRoom(user: User, name: string, theme: ITheme) {
+  createRoom(user: User, name: string, theme?: ITheme) {
     this.leaveRoom(user);
     const isPrivate = name === '';
     const nameId = isPrivate ? uid(8) : name;
@@ -173,7 +171,7 @@ class RoomManager {
         likes: 0,
         permissions: new Map([[user.getId(), { play: true, admin: true }]]),
         users: new Set<string>(),
-        theme: theme,
+        theme: theme === undefined ? { primary: '#ffffff', secondary: '#000000', image: '' } : theme,
         private: isPrivate,
       };
       this.rooms.set(room.id, room);
@@ -230,7 +228,6 @@ io.on('connection', socket => {
     roomManager.emitRoomList();
   });
   
-  
   socket.on('settings', (e: E.Settings, callback) => {
     user.name = e.name === '' ? user.name : e.name;
     user.color = e.color;
@@ -241,10 +238,19 @@ io.on('connection', socket => {
   });
 
   socket.on('joinRoom', (e: E.Room.Join, callback) => {
-    console.log(e);
     user.name = e.user.name === '' ? user.name : e.user.name;
     user.color = e.user.color;
-    callback(roomManager.joinRoom(e.id, user));
+    const room = roomManager.joinRoom(e.id, user);
+    if (room === undefined) {
+      const roomName = roomManager.createRoom(user, e.id);
+      if (roomName === undefined) {
+        callback(null);
+      } else {
+        callback(roomManager.joinRoom(roomName, user));
+      }
+    } else {
+      callback(room);
+    }
   });
 
   socket.on('updateRoom', (e: E.Room.Update) => {

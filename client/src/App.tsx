@@ -236,6 +236,7 @@ class AppModifier {
         name: { $set: '' },
         chat: { $set: [] },
       },
+      theme: { $set: initialState.theme },
     }));
   }
 
