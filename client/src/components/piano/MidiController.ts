@@ -13,6 +13,10 @@ export interface IActiveNote extends E.Piano.NoteOn {
 export type ActiveNotes = {[note: number]: IActiveNote}; 
 export type SustainedNotes = {[note: number]: E.Piano.NoteOff};
 
+enum MidiNoteType {
+  noteon,
+  noteoff,
+}
 type DeviceCallback = (devices: string[]) => void;
 export default class MidiController {
   static COMPUTER_INPUT = 'Default';
@@ -20,7 +24,7 @@ export default class MidiController {
   midiFile: string = '';
   eventHistory: Array<{
     deltaTime: string;
-    event: 'noteon'|'noteoff';
+    event: MidiNoteType;
     velocity: number;
     pitch: number;
   }> = [];
@@ -205,20 +209,17 @@ export default class MidiController {
     this.eventHistory.push({
       pitch: e.note.number,
       velocity: e.note.velocity,
-      event: 'noteon',
+      event: MidiNoteType.noteon,
       deltaTime: `T${e.note.timeStamp - this.previousEventTick}`,
     });
     if (this.track) {
-      if (!this.previousEventTick) {
-        this.previousEventTick = e.note.timeStamp;
-      }
       this.track.addEvent(new MidiWriter.NoteOnEvent({
         pitch: e.note.number,
         velocity: e.note.velocity,
         wait: `T${e.note.timeStamp - this.previousEventTick}`,
       }));
-      this.previousEventTick = e.note.timeStamp;
     }
+    this.previousEventTick = e.note.timeStamp;
   }
 
   noteoffEvent = (e: E.Piano.NoteOff) => {
@@ -228,7 +229,7 @@ export default class MidiController {
       this.eventHistory.push({
         pitch: e.note.number,
         velocity: 0,
-        event: 'noteoff',
+        event: MidiNoteType.noteoff,
         deltaTime: `T${e.note.timeStamp - this.previousEventTick}`,
       });
       if (this.track) {
@@ -236,8 +237,8 @@ export default class MidiController {
           pitch: e.note.number,
           duration: `T${e.note.timeStamp - this.previousEventTick}`,
         }));
-        this.previousEventTick = e.note.timeStamp;
       }
+      this.previousEventTick = e.note.timeStamp;
       this.player.noteoff(e);
       delete this.activeNotes[e.note.number];
     }
@@ -258,7 +259,27 @@ export default class MidiController {
       delete this.track;
     } else {
       this.track = new MidiWriter.Track();
-      this.previousEventTick = 0;
+      this.previousEventTick = this.midi.time;
     }
+  }
+
+  recordDump = () => {
+    const track = new MidiWriter.Track();
+    for (const e of this.eventHistory) {
+      if (e.event === MidiNoteType.noteon) {
+        track.addEvent(new MidiWriter.NoteOnEvent({
+          pitch: e.pitch,
+          velocity: e.velocity,
+          wait: e.deltaTime,
+        }));
+      } else {
+        track.addEvent(new MidiWriter.NoteOffEvent({
+          pitch: e.pitch,
+          duration: e.deltaTime,
+        }));
+      }
+    }
+    const file = new MidiWriter.Writer(track);
+    return file.dataUri();
   }
 }	

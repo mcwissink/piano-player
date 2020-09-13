@@ -14,6 +14,7 @@ interface IPianoState {
   devices: string[];
   recording: boolean;
   midiFile: string;
+  midiFileDump: string;
 }
 
 type IProps = IPianoProps & IAppContext
@@ -31,6 +32,7 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
       devices: [],
       recording: false,
       midiFile: '',
+      midiFileDump: '',
     };
     this.midi = new MidiController(this.props.socket, this.props.color, this.state.instrument);
   }
@@ -111,6 +113,19 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
     this.setState({ recording: !this.state.recording });
   }
 
+  handleRecordDump = () => {
+    this.downloadURI(this.midi.recordDump());
+  }
+
+  downloadURI = (uri: string) => {
+    const link = document.createElement("a");
+    /* link.download = name; */
+    link.href = uri;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
   resizeCanvas = () => {
     // Make it visually fill the positioned parent
     if (this.canvas !== undefined) {
@@ -143,12 +158,15 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
     return (
       <>
         <canvas ref={this.setup} />
-        <button onClick={this.handleRecord}>{recording ? 'Recording' : 'Record'}</button>
-        {midiFile ? (
-          <button>
-            <a href={midiFile} target='_blank' rel='noopener noreferrer'>Download</a>
-          </button>
-        ) : null}
+        <div>
+          <button onClick={this.handleRecord}>{recording ? 'Done' : 'Record'}</button>
+          {midiFile ? (
+            <button>
+              <a href={midiFile} target='_blank' rel='noopener noreferrer'>Download</a>
+            </button>
+          ) : null}
+        </div>
+        <button onClick={this.handleRecordDump}>Download last 20 min.</button>
         {room.permissions.admin ? (
           <div>
             <select value={device} onChange={this.handleDeviceSelect}>

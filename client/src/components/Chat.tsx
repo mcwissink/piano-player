@@ -76,7 +76,7 @@ class Chat extends React.PureComponent<IProps, IChatState> {
     })();
     */
     return (
-      <div key={i} style={{background: '#000000d6', color: 'white', padding: '0.5em', marginBottom: '0.5em', borderRadius: 6, display: 'inline-block', maxWidth: '20em'}}>
+      <div key={i} className='chat-message'>
         <span><span style={{ color: chat.user.color }}>{chat.user.name}</span>: {chat.message}</span>
         {/* {actionButton} */}
       </div>

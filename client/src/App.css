@@ -6,12 +6,13 @@ html, body, #root {
   position: relative;
 }
 
-html {
-  background: #444444;
-}
+/* html { */
+/*   background: #444444; */
+/* } */
+
 #header-logo-text {
   font-weight: 900;
-  color: white;
+  /* color: white; */
   letter-spacing: 0.1em;
 }
 
@@ -36,7 +37,7 @@ html {
 
 #piano-page-background-mask {
   z-index: -1;
-  background-color: #0000008a;
+  background-color: #ffffff8a;
   /* -webkit-mask: -webkit-linear-gradient(0.25turn, black, transparent 50%, black); */
   /* -webkit-mask: linear-gradient(0.5turn, black, transparent 50%, black); */
   -webkit-filter: blur(3px);
@@ -114,25 +115,18 @@ html {
   flex-direction: column;
 }
 
-.username-lightbox-cover {
-  position: fixed;
-  z-index: 500;
-  width: 100%;
-  height: 100%;
-  background: #000000e8;
+.chat-message {
+  background-color: #ffffff8a;
+  padding: 0.5em;
+  marginBottom: 0.5em;
+  borderRadius: 5;
+  display: block;
 }
 
-.username-lightbox-container {
-  background: white;
-  border-radius: 10px;
-  position: fixed;
-  width: 500px;
-  top: 50%;
-  left: 50%;
-  margin-top: -100px; /* Negative half of height. */
-  margin-left: -250px; /* Negative half of width. */
-  z-index: 101;
-  padding: 1em;
+.room-list-room {
+  display: flex;
+  margin-left: 1em;
+  flex-direction: column;
 }
 
 .room-list-item-container {
@@ -160,11 +154,11 @@ html {
 /* Text */
 h1, h2 {
   font-weight: 700;
-  color: white;
+  /* color: white; */
 }
 
 p {
-  color: white;
+  /* color: white; */
 }
 
 a {
