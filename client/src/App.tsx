@@ -132,7 +132,7 @@ class App extends React.PureComponent<RouteComponentProps, IAppState> {
 
   header = () => (
     <Link to={`/`} style={{ textDecoration: 'none' }}>
-      <h1>Keyboard.Cafe</h1>
+      <h1>keyboard.cafe</h1>
     </Link>
   );
   
@@ -152,8 +152,7 @@ class App extends React.PureComponent<RouteComponentProps, IAppState> {
         modifier: this.modifier,
         ...this.state,
       }}>
-        <div id='piano-page-background-mask' />
-        <div id='piano-page-background' style={{ backgroundImage: `url(${this.state.theme.image})`}} />
+        <div id='piano-page-background' style={{ opacity: 0.5, backgroundImage: `url(${this.state.theme.image})`}} />
         <div style={{ display: 'flex', flexDirection: 'row', height: '100%' }}>
           <BrowserView>
             {this.header()}

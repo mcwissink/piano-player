@@ -85,8 +85,8 @@ class RoomSettings extends React.PureComponent<IProps, IRoomSettingsState> {
     return (
       <div>
         <form onSubmit={this.onRoomSubmit} style={{ display: 'flex', alignItems: 'center' }}>
-          <input onFocus={modifier.disablePiano} onBlur={modifier.enablePiano} placeholder="Image URL" type="text" value={theme.image} onChange={this.onImageChange} />
-          <Button type="submit" value="Update" disabled={!this.canSubmit()} />
+          <input onFocus={modifier.disablePiano} onBlur={modifier.enablePiano} placeholder="image url" type="text" value={theme.image} onChange={this.onImageChange} />
+          <Button type="submit" value="update" disabled={!this.canSubmit()} />
         </form>
       </div>
     )

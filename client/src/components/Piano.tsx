@@ -159,14 +159,14 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
       <>
         <canvas ref={this.setup} />
         <div>
-          <button onClick={this.handleRecord}>{recording ? 'Done' : 'Record'}</button>
+          <button onClick={this.handleRecord}>{recording ? 'done' : 'record'}</button>
           {midiFile ? (
             <button>
-              <a href={midiFile} target='_blank' rel='noopener noreferrer'>Download</a>
+              <a href={midiFile} target='_blank' rel='noopener noreferrer'>download</a>
             </button>
           ) : null}
         </div>
-        <button onClick={this.handleRecordDump}>Download last 20 min.</button>
+        <button onClick={this.handleRecordDump}>download last 10 min.</button>
         {room.permissions.admin ? (
           <div>
             <select value={device} onChange={this.handleDeviceSelect}>

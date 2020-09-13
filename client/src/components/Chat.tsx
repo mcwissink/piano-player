@@ -100,8 +100,8 @@ class Chat extends React.PureComponent<IProps, IChatState> {
           </div>
         </div>
         <form onSubmit={this.onMessageSubmit} style={{ display: 'flex', flexDirection: 'row', width: '100%' }}>
-          <input onFocus={modifier.disablePiano} onBlur={modifier.enablePiano} placeholder="Send a message" type="text" value={message} onChange={this.onMessageChange} />
-          <Button type="submit" value="Send" />
+          <input onFocus={modifier.disablePiano} onBlur={modifier.enablePiano} placeholder="type a message" type="text" value={message} onChange={this.onMessageChange} />
+          <Button type="submit" value="send" />
         </form>
       </div>
     )

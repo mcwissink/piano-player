@@ -118,8 +118,8 @@ html, body, #root {
 .chat-message {
   background-color: #ffffff8a;
   padding: 0.5em;
-  marginBottom: 0.5em;
-  borderRadius: 5;
+  margin-bottom: 0.5em;
+  border-radius: 5px;
   display: block;
 }
 

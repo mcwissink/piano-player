@@ -19,7 +19,7 @@ enum MidiNoteType {
 }
 type DeviceCallback = (devices: string[]) => void;
 export default class MidiController {
-  static COMPUTER_INPUT = 'Default';
+  static COMPUTER_INPUT = 'default';
   midi: WebMidi.WebMidi;
   midiFile: string = '';
   eventHistory: Array<{
@@ -27,6 +27,7 @@ export default class MidiController {
     event: MidiNoteType;
     velocity: number;
     pitch: number;
+    timeStamp: number;
   }> = [];
   track: any;
   previousEventTick: number = 0;
@@ -37,6 +38,7 @@ export default class MidiController {
   noteColor: string;
   sustain: boolean;
   active: boolean = true;
+  tempo: number;
   constructor(public socket: SafeSocket, noteColor: string, instrument: string) {
     this.midi = WebMidi.default;
     this.player = new MidiPlayer();
@@ -45,6 +47,7 @@ export default class MidiController {
     this.sustain = false;
     this.activeNotes = {};
     this.sustainedNotes = {};
+    this.tempo = 80;
     this.socket.on<E.Piano.ControlChange>('controlchange', this.controlchangeEvent);
     this.socket.on('noteon', this.noteonEvent);
     this.socket.on('noteoff', this.noteoffEvent);
@@ -211,6 +214,7 @@ export default class MidiController {
       velocity: e.note.velocity,
       event: MidiNoteType.noteon,
       deltaTime: `T${e.note.timeStamp - this.previousEventTick}`,
+      timeStamp: e.note.timeStamp,
     });
     if (this.track) {
       this.track.addEvent(new MidiWriter.NoteOnEvent({
@@ -231,7 +235,13 @@ export default class MidiController {
         velocity: 0,
         event: MidiNoteType.noteoff,
         deltaTime: `T${e.note.timeStamp - this.previousEventTick}`,
+        timeStamp: e.note.timeStamp,
       });
+      // Remove old events from the history
+      while (this.eventHistory[0] && performance.now() - this.eventHistory[0].timeStamp > 10 * 60 * 1000) {
+        this.eventHistory.shift();
+      }
+
       if (this.track) {
         this.track.addEvent(new MidiWriter.NoteOffEvent({
           pitch: e.note.number,
@@ -259,12 +269,14 @@ export default class MidiController {
       delete this.track;
     } else {
       this.track = new MidiWriter.Track();
+      this.track.setTempo(this.tempo);
       this.previousEventTick = this.midi.time;
     }
   }
 
   recordDump = () => {
     const track = new MidiWriter.Track();
+    track.setTempo(this.tempo);
     for (const e of this.eventHistory) {
       if (e.event === MidiNoteType.noteon) {
         track.addEvent(new MidiWriter.NoteOnEvent({
