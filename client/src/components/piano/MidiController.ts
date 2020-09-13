@@ -38,7 +38,8 @@ export default class MidiController {
   noteColor: string;
   sustain: boolean;
   active: boolean = true;
-  tempo: number;
+  bpm: number;
+  ppq: number;
   constructor(public socket: SafeSocket, noteColor: string, instrument: string) {
     this.midi = WebMidi.default;
     this.player = new MidiPlayer();
@@ -47,7 +48,8 @@ export default class MidiController {
     this.sustain = false;
     this.activeNotes = {};
     this.sustainedNotes = {};
-    this.tempo = 80;
+    this.bpm = 80;
+    this.ppq = 240;
     this.socket.on<E.Piano.ControlChange>('controlchange', this.controlchangeEvent);
     this.socket.on('noteon', this.noteonEvent);
     this.socket.on('noteoff', this.noteoffEvent);
@@ -213,14 +215,14 @@ export default class MidiController {
       pitch: e.note.number,
       velocity: e.note.velocity,
       event: MidiNoteType.noteon,
-      deltaTime: `T${e.note.timeStamp - this.previousEventTick}`,
+      deltaTime: `T${this.getMidiTime(e.note.timeStamp - this.previousEventTick)}`,
       timeStamp: e.note.timeStamp,
     });
     if (this.track) {
       this.track.addEvent(new MidiWriter.NoteOnEvent({
         pitch: e.note.number,
-        velocity: e.note.velocity,
-        wait: `T${e.note.timeStamp - this.previousEventTick}`,
+        velocity: e.note.velocity * 127,
+        wait: `T${this.getMidiTime(e.note.timeStamp - this.previousEventTick)}`,
       }));
     }
     this.previousEventTick = e.note.timeStamp;
@@ -234,7 +236,7 @@ export default class MidiController {
         pitch: e.note.number,
         velocity: 0,
         event: MidiNoteType.noteoff,
-        deltaTime: `T${e.note.timeStamp - this.previousEventTick}`,
+        deltaTime: `T${this.getMidiTime(e.note.timeStamp - this.previousEventTick)}`,
         timeStamp: e.note.timeStamp,
       });
       // Remove old events from the history
@@ -245,7 +247,7 @@ export default class MidiController {
       if (this.track) {
         this.track.addEvent(new MidiWriter.NoteOffEvent({
           pitch: e.note.number,
-          duration: `T${e.note.timeStamp - this.previousEventTick}`,
+          duration: `T${this.getMidiTime(e.note.timeStamp - this.previousEventTick)}`,
         }));
       }
       this.previousEventTick = e.note.timeStamp;
@@ -262,6 +264,10 @@ export default class MidiController {
     }
   }
 
+  getMidiTime(milliseconds: number) {
+    return milliseconds * ((this.bpm * this.ppq) / 60000);
+  }
+
   record() {
     if (this.track) {
       const file = new MidiWriter.Writer(this.track);
@@ -269,19 +275,17 @@ export default class MidiController {
       delete this.track;
     } else {
       this.track = new MidiWriter.Track();
-      this.track.setTempo(this.tempo);
       this.previousEventTick = this.midi.time;
     }
   }
 
   recordDump = () => {
     const track = new MidiWriter.Track();
-    track.setTempo(this.tempo);
     for (const e of this.eventHistory) {
       if (e.event === MidiNoteType.noteon) {
         track.addEvent(new MidiWriter.NoteOnEvent({
           pitch: e.pitch,
-          velocity: e.velocity,
+          velocity: e.velocity * 127,
           wait: e.deltaTime,
         }));
       } else {
