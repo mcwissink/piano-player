@@ -92,7 +92,7 @@ class Chat extends React.PureComponent<IProps, IChatState> {
       message,
     } = this.state;
     return (
-      <div id="chat-container" style={{display: 'flex', overflow: 'auto', flexDirection: 'column'}}>
+      <div id="chat-container">
         <div id="scrolly" style={{display: 'flex', overflow: 'auto', flexDirection: 'column', width: '100%'}}>
           {/* Making scrolling work with flexbox, flexbox spec author, "this is a bug."  https://stackoverflow.com/a/21541021/2930176 */}
           <div style={{display: 'flex', minHeight: 'min-content', alignItems: 'flex-start', flexDirection: 'column', marginTop: 'auto'}}>

@@ -118,7 +118,8 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
   }
 
   downloadURI = (uri: string) => {
-    const link = document.createElement("a");
+    const link = document.createElement('a');
+    link.setAttributeNode(document.createAttribute('download'));
     /* link.download = name; */
     link.href = uri;
     document.body.appendChild(link);
@@ -129,14 +130,13 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
   resizeCanvas = () => {
     // Make it visually fill the positioned parent
     if (this.canvas !== undefined) {
-      const container = document.getElementById('room');
+      const container = document.getElementById('canvas-container');
       if (container !== null) {
         /* this.canvas.width = this.canvas.offsetWidth;
          * this.canvas.height = this.canvas.offsetHeight; */
         const { width, height } = container.getBoundingClientRect();
-        const size = Math.min(width, height);
-        this.canvas.width = size;
-        this.canvas.height = size;
+        this.canvas.width = width;
+        this.canvas.height = height;
         if (this.graphics !== undefined) {
           this.graphics.resize();
         }
@@ -156,13 +156,15 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
       room,
     } = this.props;
     return (
-      <>
-        <canvas ref={this.setup} />
+      <div style={{ width: '100%', height: '100%' }}>
+        <div id='canvas-container' style={{ width: '100%', height: '80%' }}>
+          <canvas ref={this.setup} />
+        </div>
         <div>
           <button onClick={this.handleRecord}>{recording ? 'done' : 'record'}</button>
           {midiFile ? (
             <button>
-              <a href={midiFile} target='_blank' rel='noopener noreferrer'>download</a>
+              <a href={midiFile} download>download</a>
             </button>
           ) : null}
         </div>
@@ -178,7 +180,7 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
             </select>
           </div>
         ) : null}
-      </>
+      </div>
     )
   }
 }

@@ -2,7 +2,6 @@
 @import url('https://fonts.googleapis.com/css?family=Montserrat:400,700,900&display=swap');
 html, body, #root {
   height: 100%;
-  font-family: 'Montserrat', sans-serif;
   position: relative;
 }
 
@@ -217,6 +216,9 @@ a {
 #chat-container {
   display: flex;
   align-items: flex-end;
+  overflow: auto;
+  flex-direction: column;
+  width: 25em;
 }
 
 /* .button { */
