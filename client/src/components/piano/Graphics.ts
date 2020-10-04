@@ -1,4 +1,4 @@
-import { ITheme } from '../../App';
+import { IApp as A } from '../../interfaces/IApp';
 import { IActiveNote, ActiveNotes } from "./MidiController"
 
 function hexToRgb(hex: string) {
@@ -59,9 +59,9 @@ export default class PianoGrahpics {
   keyHeight: number;
   offsetX: number;
   offsetY: number;
-  theme: ITheme;
+  theme: A.Theme;
   gradients: {[id: string]: CanvasGradient} = {};
-  constructor(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, theme: ITheme) {
+  constructor(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, theme: A.Theme) {
     this.canvas = canvas;
     this.ctx = ctx;
 
@@ -79,7 +79,7 @@ export default class PianoGrahpics {
     this.resize();
   }
 
-  setTheme(theme: ITheme) {
+  setTheme(theme: A.Theme) {
     this.theme = theme;
   }
 

@@ -1,5 +1,5 @@
 import Soundfont from 'soundfont-player'
-import { Events as E } from '../../../../server/interfaces/IEvents';
+import { IEvents as E } from '../../../../server/interfaces/IEvents';
 import instruments from '../../instruments.json'
 
 export default class MidiPlayer {

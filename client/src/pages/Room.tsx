@@ -1,10 +1,10 @@
 import React from "react";
-import { IUser, IRoom, IAppContext, withContext } from '../App';
+import { IAppContext, withContext } from '../App';
 import { withRouter, RouteComponentProps } from 'react-router-dom';
-import RoomSettings from '../components/RoomSettings';
 import Chat from '../components/Chat';
 import Piano from "../components/Piano";
-import { Events as E } from '../../../server/interfaces/IEvents';
+import { IEvents as E } from '../../../server/interfaces/IEvents';
+import { IApp as A } from '../interfaces/IApp';
 import { isMobile, BrowserView } from 'react-device-detect';
 
 interface IRoomProps {
@@ -17,18 +17,15 @@ type IProps = IRoomProps & IAppContext & RouteComponentProps;
 class Room extends React.PureComponent<IProps, IRoomState> {
   componentDidMount() {
     const {
-      name,
-      color,
+      id,
+      user,
       socket
     } = this.props;
-    socket.emit<E.Room.Join, IRoom|null>('joinRoom', {
-      id: this.props.id,
-      user: {
-        name,
-        color,
-      }
+    socket.emit<E.Room.Join, A.Room|null>('joinRoom', {
+      id,
+      user,
     }, (room) => {
-      this.props.modifier.roomEvent(room);
+      this.props.modifier.roomUpdate(room);
     });
   }
 
@@ -39,19 +36,16 @@ class Room extends React.PureComponent<IProps, IRoomState> {
   componentDidUpdate(prevProps: IProps) {
     const {
       id,
-      name,
-      color,
+      user,
       socket,
     } = this.props;
     if (id !== prevProps.id) {
-      socket.emit<E.Room.Join, IRoom|null>('joinRoom', {
+      socket.emit<E.Room.Join, A.Room|null>('joinRoom', {
         id,
-        user: {
-          name,
-          color,
-        }
-      }, (room: IRoom|null) => {
-        this.props.modifier.roomEvent(room);
+        user,
+      }, (room: A.Room|null) => {
+        debugger
+        this.props.modifier.roomUpdate(room);
       });
     }
   }
@@ -63,7 +57,7 @@ class Room extends React.PureComponent<IProps, IRoomState> {
    * }
    */
   
-  renderUser = (user: IUser) => {
+  renderUser = (user: A.User) => {
     const {
       room,
       modifier,
@@ -88,21 +82,15 @@ class Room extends React.PureComponent<IProps, IRoomState> {
       return <div>loading...</div>;
     }
     return (
-      <div style={{ width: '100%'}}>
+      <div style={{ flex: 1 }}>
         {isMobile ? (
-          <div id="room" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <div>
-              <Piano />
-              {room.permissions.admin ? <RoomSettings roomName={room.name} /> : null}
-            </div>
+          <div id="room" style={{ display: 'flex', flex: 1, height: '100%', flexDirection: 'column', alignItems: 'center' }}>
+            <Piano />
             <Chat />
           </div>
         ) : (
-          <div id="room" style={{ display: 'flex', width: '100%', height: '100%', justifyContent: 'space-between' }}>
-            <div style={{ height: '100%', flex: 1 }}>
-              <Piano />
-              {room.permissions.admin ? <RoomSettings roomName={room.name} /> : null}
-            </div>
+          <div id="room" style={{ display: 'flex', flex: 1, height: '100%', justifyContent: 'space-between' }}>
+            <Piano />
             <Chat />
           </div>
         )}

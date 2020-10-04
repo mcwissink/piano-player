@@ -1,12 +1,14 @@
 import React from "react";
 import update from 'immutability-helper';
 import { withRouter, RouteComponentProps } from 'react-router-dom';
-import { ITheme, IAppContext, withContext } from '../App';
-import { Events as E } from '../../../server/interfaces/IEvents';
+import { IAppContext, withContext } from '../App';
+import { IEvents as E } from '../../../server/interfaces/IEvents';
+import { IApp as A } from '../interfaces/IApp';
 import Button from "./Button";
 
 interface IRoomSettingsState {
-  theme: ITheme;
+  theme: A.Theme;
+  scope: string;
 }
 
 type IProps = {
@@ -19,11 +21,11 @@ class RoomSettings extends React.PureComponent<IProps, IRoomSettingsState> {
       primary: '#ffffff',
       secondary: '#000000',
       image: '',
-    } : props.theme;
+    } : props.room.theme;
     this.state = {
       theme,
+      scope: props.room.scope || 'public',
     };
-
   }
 
   canSubmit = () => {
@@ -37,10 +39,12 @@ class RoomSettings extends React.PureComponent<IProps, IRoomSettingsState> {
     } = this.props;
     const {
       theme,
+      scope,
     } = this.state;
     if (this.canSubmit()) {
       socket.emit<E.Room.Update>('updateRoom', {
         theme,
+        scope,
       });
     }
   };
@@ -75,18 +79,26 @@ class RoomSettings extends React.PureComponent<IProps, IRoomSettingsState> {
     }));
   }
 
+  onScopeChange = () => {
+    this.setState(oldState => ({
+      scope: oldState.scope === 'private' ? 'public' : 'private',
+    }));
+  }
+
   render() {
     const {
       modifier,
     } = this.props;
     const {
       theme,
+      scope
     } = this.state;
     return (
       <div>
         <form onSubmit={this.onRoomSubmit} style={{ display: 'flex', alignItems: 'center' }}>
-          <input onFocus={modifier.disablePiano} onBlur={modifier.enablePiano} placeholder="image url" type="text" value={theme.image} onChange={this.onImageChange} />
-          <Button type="submit" value="update" disabled={!this.canSubmit()} />
+          {/* <input onFocus={modifier.disablePiano} onBlur={modifier.enablePiano} placeholder='image url' type='text' value={theme.image} onChange={this.onImageChange} /> */}
+          <Button type='button' value={scope} onClick={this.onScopeChange}/>
+          <Button type='submit' value='update' disabled={!this.canSubmit()} />
         </form>
       </div>
     )

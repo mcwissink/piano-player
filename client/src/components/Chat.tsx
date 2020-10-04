@@ -1,7 +1,8 @@
 import React from "react";
-import { IChat, IAppContext, withContext, SafeSocket } from '../App';
+import { IAppContext, withContext, SafeSocket } from '../App';
 import Button from './Button';
-import { Events as E } from '../../../server/interfaces/IEvents';
+import { IEvents as E } from '../../../server/interfaces/IEvents';
+import { IApp as A } from '../interfaces/IApp';
 
 interface IChatProps {
 
@@ -45,7 +46,7 @@ class Chat extends React.PureComponent<IProps, IChatState> {
     if (message === '') {
       return;
     } 
-    this.socket.emit<E.Chat, void>('chat', {
+    this.socket.emit<E.Chat.Create, void>('chat', {
       id: this.socket.raw.id,
       message,
     });
@@ -59,7 +60,7 @@ class Chat extends React.PureComponent<IProps, IChatState> {
   }
 
 
-  renderChatMessage = (chat: IChat, i: number) => {
+  renderChatMessage = (chat: A.Chat, i: number) => {
     /*
     const actionButton = (() => {
       const words = new Set(chat.message.split(/\W+/).map(word => word.toLowerCase()));
@@ -93,14 +94,11 @@ class Chat extends React.PureComponent<IProps, IChatState> {
     } = this.state;
     return (
       <div id="chat-container">
-        <div id="scrolly" style={{display: 'flex', overflow: 'auto', flexDirection: 'column', width: '100%'}}>
-          {/* Making scrolling work with flexbox, flexbox spec author, "this is a bug."  https://stackoverflow.com/a/21541021/2930176 */}
-          <div style={{display: 'flex', minHeight: 'min-content', alignItems: 'flex-start', flexDirection: 'column', marginTop: 'auto'}}>
-            {room.chat.map((c, i) => this.renderChatMessage(c, i))}
-          </div>
+        <div style={{ flex: 1, overflow: 'hidden', width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+          {room.chat.map((c, i) => this.renderChatMessage(c, i))}
         </div>
         <form onSubmit={this.onMessageSubmit} style={{ display: 'flex', flexDirection: 'row', width: '100%' }}>
-          <input onFocus={modifier.disablePiano} onBlur={modifier.enablePiano} placeholder="type a message" type="text" value={message} onChange={this.onMessageChange} />
+          <input onFocus={modifier.disablePiano} onBlur={modifier.enablePiano} placeholder="type a message" type="text" value={message} onChange={this.onMessageChange} style={{ flex: 1 }} />
           <Button type="submit" value="send" />
         </form>
       </div>

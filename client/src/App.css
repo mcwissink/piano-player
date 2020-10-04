@@ -1,17 +1,19 @@
 /* Globals */
-@import url('https://fonts.googleapis.com/css?family=Montserrat:400,700,900&display=swap');
 html, body, #root {
+  font: system-ui;
   height: 100%;
+  color: #333;
   position: relative;
+  overflow: hidden;
 }
 
-/* html { */
-/*   background: #444444; */
-/* } */
+#sidebar {
+  margin-left: 1em;
+  margin-right: 1em;
+}
 
 #header-logo-text {
   font-weight: 900;
-  /* color: white; */
   letter-spacing: 0.1em;
 }
 
@@ -45,70 +47,6 @@ html, body, #root {
   mask-type: luminance;
 }
 
-/* #piano-page-background-2 { */
-/*     -webkit-mask: none; */
-/*     -webkit-filter: none; */
-/*     mask: none; */
-/*     filter: none; */
-/* } */
-
-/* Grid */
-/* #content { */
-/*   display: grid; */
-/*   grid-gap: 10px; */
-/*   grid-template-columns: 1fr 2fr 1fr; */
-/*   /\* grid-template-columns: minmax(200px, 1fr) 2fr 0.8fr; *\/ */
-/*   /\* grid-auto-rows: 70px 1fr; *\/ */
-/*   grid-template-rows: 70px 1fr 20px; */
-/*   grid-gap: 10px; */
-/*   position: fixed; */
-/*   left: 0; */
-/*   right: 0; */
-/*   z-index: 10; */
-/*   margin-left: 20px; */
-/*   margin-right: 20px; */
-/*   margin-bottom: 20px; */
-/*   height: 100%; */
-/* } */
-
-
-/* #header { */
-/*   grid-column: 1 / 1; */
-/*   grid-row: 1 / 1; */
-/* } */
-
-/* #roomlist-container { */
-/*   grid-column: 1 / 1; */
-/*   grid-row: 2 / 2; */
-/* } */
-
-/* #room { */
-/*   grid-column: 2 / 2; */
-/*   grid-row: 2 / 2; */
-/* } */
-
-/* #room-header { */
-/*   grid-column: 2 / 2; */
-/*   grid-row: 1 / 1; */
-/* } */
-
-/* #chat-container { */
-/*   grid-column: 3 / 3; */
-/*   grid-row: 2 / 2; */
-/* } */
-
-/* #room { */
-/*   flex: 1 0 auto; */
-/*   position: relative; */
-/* } */
-
-/* #room:after { */
-/*   content: ""; */
-/*   float:left; */
-/*   display: block; */
-/*   padding-top: 100%; */
-/* } */
-
 #sidebar-container {
   display: flex;
   flex-direction: column;
@@ -120,6 +58,7 @@ html, body, #root {
   margin-bottom: 0.5em;
   border-radius: 5px;
   display: block;
+  word-break: break-all;
 }
 
 .room-list-room {
@@ -153,11 +92,6 @@ html, body, #root {
 /* Text */
 h1, h2 {
   font-weight: 700;
-  /* color: white; */
-}
-
-p {
-  /* color: white; */
 }
 
 a {
@@ -216,8 +150,9 @@ a {
 #chat-container {
   display: flex;
   align-items: flex-end;
-  overflow: auto;
   flex-direction: column;
+  margin-left: 1em;
+  height: 100%;
   width: 25em;
 }
 

@@ -1,20 +1,32 @@
-import { Room as R} from './IRoom';
+import { IApp as A } from '../../client/src/interfaces/IApp';
 
-export namespace Events {
+export namespace IEvents {
   export namespace Room {
     export interface Create {
-      name: string;
-      theme: R.Theme;
+      id: string;
+      theme: A.Theme;
+      scope: string;
+    };
+    export interface Read {
+      id: string;
+      permissions: A.Permissions;
+      theme: A.Theme;
+      players: A.User[];
+      scope: string;
     };
     export interface Update {
-      theme: any;
+      theme: A.Theme;
+      scope: string;
     };
     export interface Join {
       id: string;
-      user: {
-        name: string;
-        color: string;
-      }
+      user: A.User;
+    }
+    export interface Summary {
+      id: string;
+      likes: number;
+      viewers: number;
+      admins: A.User[];
     }
   }
   export namespace Piano {
@@ -42,9 +54,14 @@ export namespace Events {
       };
     }
   }
-  export interface Chat {
-    id: string;
-    message: string;
+  export namespace Chat {
+    export interface Create {
+      id: string;
+      message: string;
+    }
+    export interface Read extends Create {
+      user: A.User;
+    }
   }
   export interface Permissions {
     id: string;

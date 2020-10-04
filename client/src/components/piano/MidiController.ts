@@ -1,7 +1,7 @@
 import * as WebMidi from 'webmidi';
 import MidiPlayer from './MidiPlayer';
 import { SafeSocket } from '../../App';
-import { Events as E } from '../../../../server/interfaces/IEvents';
+import { IEvents as E } from '../../../../server/interfaces/IEvents';
 import { keyMap } from '../../util';
 import instruments from '../../instruments.json';
 import MidiWriter from 'midi-writer-js';
@@ -56,10 +56,10 @@ export default class MidiController {
   }
 
   init(deviceCallback: DeviceCallback) {
+    deviceCallback(this.getInputs());
 	  this.midi.enable(err => {
       if (err) {
         console.log("Web Midi API not supported");
-        deviceCallback(this.getInputs());
       } else {
         this.midi.addListener("connected", () => deviceCallback(this.getInputs()));
         this.midi.addListener("disconnected", () => deviceCallback(this.getInputs()));

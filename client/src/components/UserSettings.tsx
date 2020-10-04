@@ -9,14 +9,13 @@ type IProps = ISettingsProps & IAppContext;
 class Settings extends React.PureComponent<IProps> {
   render() {
     const {
-      name,
-      color,
+      user,
       modifier,
     } = this.props;
     return (
       <div>
-        <input type="text" placeholder={'Username'} value={name} onChange={modifier.onNameChange} />
-        <input type="color" value={color} onChange={modifier.onColorChange} />
+        <input type="text" placeholder={'Username'} value={user.name} onChange={modifier.onNameChange} />
+        <input type="color" value={user.color} onChange={modifier.onColorChange} />
       </div>
     )
   }

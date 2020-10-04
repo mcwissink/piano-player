@@ -8,7 +8,10 @@ const server = new http.Server(app);
 const io = socket(server);
 
 // Interfaces
-import { Events as E } from './interfaces/IEvents'
+import { IEvents as E } from './interfaces/IEvents';
+import { IApp as A } from '../client/src/interfaces/IApp';
+import { IServer as S } from './interfaces/IServer';
+
 
 class User {
   socket: socket.Socket
@@ -45,39 +48,18 @@ class User {
   }
 }
 
-interface ITheme {
-  primary: string;
-  secondary: string;
-  image: string;
-}
-
-interface IPermissions {
-  play: boolean;
-  admin: boolean;
-}
-
-interface IRoom {
-  id: string;
-  name: string;
-  likes: number;
-  permissions: Map<string, IPermissions>; 
-  users: Set<string>;
-  theme: ITheme;
-  private: boolean;
-}
-
 const users = new Map<string, User>();
 class RoomManager {
-  rooms: Map<string, IRoom>;
+  rooms: Map<string, S.Room>;
   constructor() {
     this.rooms = new Map();
   }
 
   emitRoomList() {
-    io.emit('roomList', Array.from(this.rooms.values()).filter(room => !room.private).map(room => this.getRoomListItem(room)));
+    io.emit('roomList', Array.from(this.rooms.values()).filter(room => room.scope === 'public').map(room => this.getRoomListItem(room)));
   }
 
-  emitRoomUpdate(room: IRoom) {
+  emitRoomUpdate(room: S.Room) {
     for (const id of room.users.values()) {
       const user = users.get(id);
       if (user !== undefined) {
@@ -86,7 +68,7 @@ class RoomManager {
     }
   }
 
-  getRoomGroup(room: IRoom, permission: keyof IPermissions) {
+  getRoomGroup(room: S.Room, permission: keyof A.Permissions) {
     const group = [];
     for (let entry of Array.from(room.permissions.entries())) {
       if (entry[1][permission]) {
@@ -99,28 +81,26 @@ class RoomManager {
     return group;
   }
 
-  getRoomListItem(room: IRoom) {
+  getRoomListItem(room: S.Room) {
     return {
       id: room.id,
-      name: room.name,
       likes: room.likes,
       viewers: room.users.size,
       admins: this.getRoomGroup(room, 'admin'),
     }
   }
 
-  getRoomData(room: IRoom, user: User) {
+  getRoomData(room: S.Room, user: User) {
     return {
       id: room.id,
       permissions: this.getPermissions(user),
-      name: room.name,
       theme: room.theme,
       players: this.getRoomGroup(room, 'play'),
-      private: false,
+      scope: room.scope,
     };
   }
 
-  getRoom<T>(id: string, callback: (room: IRoom) => T, error?: () => void): T|undefined {
+  getRoom<T>(id: string, callback: (room: S.Room) => T, error?: () => void): T|undefined {
     const room = this.rooms.get(id);
     if (room === undefined) {
       if (error !== undefined) {
@@ -131,7 +111,7 @@ class RoomManager {
     }
   }
 
-  hasPermission<T extends keyof IPermissions>(user: User, permission: T, callback: (room: IRoom) => void) {
+  hasPermission<T extends keyof A.Permissions>(user: User, permission: T, callback: (room: S.Room) => void) {
     this.getRoom(user.roomId, room => {
       const permissions = room.permissions.get(user.socket.id);
       if (permissions !== undefined && permissions[permission]) {
@@ -140,14 +120,14 @@ class RoomManager {
     });
   }
 
-  updatePermissions(user: User, id: string, permissions: IPermissions) {
+  updatePermissions(user: User, id: string, permissions: A.Permissions) {
     this.hasPermission(user, 'admin', room => {
       room.permissions.set(id, permissions);
       this.emitRoomUpdate(room);
     });
   }
   
-  getPermissions(user: User): IPermissions {
+  getPermissions(user: User): A.Permissions {
     const permissions = this.getRoom(user.roomId, room => {
       return room.permissions.get(user.socket.id);
     });
@@ -160,33 +140,40 @@ class RoomManager {
     });
   }
 
-  createRoom(user: User, name: string, theme?: ITheme) {
+  createRoom(user: User, options: E.Room.Create) {
     this.leaveRoom(user);
-    const isPrivate = name === '';
-    const nameId = isPrivate ? uid(8) : name;
-    if (!this.rooms.has(name)) {
+    const {
+      id,
+      theme,
+      scope,
+    } = options;
+    if (!this.rooms.has(id)) {
       const room = {
-        id: nameId, 
-        name: nameId,
+        id: scope === 'private' ? uid(8) : id,
         likes: 0,
         permissions: new Map([[user.getId(), { play: true, admin: true }]]),
         users: new Set<string>(),
         theme: theme === undefined ? { primary: '#ffffff', secondary: '#000000', image: '' } : theme,
-        private: isPrivate,
+        scope,
       };
       this.rooms.set(room.id, room);
       this.emitRoomList();
-      return this.getRoomData(room, user).name;
+      return this.getRoomData(room, user).id;
     }
   }
 
-  updateRoom(user: User, theme: ITheme) {
+  updateRoom(user: User, update: E.Room.Update) {
+    const {
+      theme,
+      scope
+    } = update;
     this.hasPermission(user, 'admin', room => {
       const updatedRoom = {
         ...room,
         theme,
+        scope,
       }
-      this.rooms.set(room.name, updatedRoom);
+      this.rooms.set(room.id, updatedRoom);
       this.emitRoomUpdate(updatedRoom);
     });
   }
@@ -234,27 +221,18 @@ io.on('connection', socket => {
   });
 
   socket.on('createRoom', (e: E.Room.Create, callback) => {
-    callback(roomManager.createRoom(user, e.name, e.theme));
+    callback(roomManager.createRoom(user, e));
   });
 
   socket.on('joinRoom', (e: E.Room.Join, callback) => {
     user.name = e.user.name === '' ? user.name : e.user.name;
     user.color = e.user.color;
     const room = roomManager.joinRoom(e.id, user);
-    if (room === undefined) {
-      const roomName = roomManager.createRoom(user, e.id);
-      if (roomName === undefined) {
-        callback(null);
-      } else {
-        callback(roomManager.joinRoom(roomName, user));
-      }
-    } else {
-      callback(room);
-    }
+    callback(room);
   });
 
   socket.on('updateRoom', (e: E.Room.Update) => {
-    roomManager.updateRoom(user, e.theme);
+    roomManager.updateRoom(user, e);
   });
 
   // socket.on('likeRoom', e => {
@@ -293,7 +271,7 @@ io.on('connection', socket => {
     });
   });
   
-  socket.on('chat', (e: E.Chat) => {
+  socket.on('chat', (e: E.Chat.Create) => {
     io.to(user.roomId).emit('chat', {
       ...e,
       user: user.getSharedData(),

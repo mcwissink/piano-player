@@ -22,16 +22,16 @@ class Settings extends React.PureComponent<IProps, ISettingsState> {
   onSettingsSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const {
-      color,
+      user,
       modifier,
       socket,
     } = this.props;
     const {
-      name
+      name,
     } = this.state;
     socket.emit('settings', {
       name,
-      color,
+      color: user.color,
     }, modifier.onUserChange);
     this.setState({ name: '' });
   }
@@ -44,8 +44,7 @@ class Settings extends React.PureComponent<IProps, ISettingsState> {
 
   render() {
     const {
-      name,
-      color,
+      user,
       modifier,
     } = this.props;
     return (
@@ -53,7 +52,7 @@ class Settings extends React.PureComponent<IProps, ISettingsState> {
         <span>Settings</span>
         <form onSubmit={this.onSettingsSubmit}>
           <input type="text" placeholder={name} value={this.state.name} onChange={this.onNameChange} />
-          <input type="color" value={color} onChange={modifier.onColorChange} />
+          <input type="color" value={user.color} onChange={modifier.onColorChange} />
           <input type="submit" value="Save"/>
         </form>
       </div>

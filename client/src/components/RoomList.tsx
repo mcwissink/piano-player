@@ -1,6 +1,7 @@
 import React from "react";
 import { Link, withRouter, RouteComponentProps } from 'react-router-dom';
-import { IAppContext, withContext, IRoomListItem } from '../App';
+import { IAppContext, withContext } from '../App';
+import { IApp as A } from '../interfaces/IApp';
 import playImg from './../img/play.png';
 
 interface IRoomProps {
@@ -12,7 +13,7 @@ interface IRoomState {
 
 type IProps = IRoomProps & IAppContext & RouteComponentProps;
 class RoomList extends React.PureComponent<IProps, IRoomState> {
-  renderRoomItem = (room: IRoomListItem) => {
+  renderRoomItem = (room: A.RoomSummary) => {
     return (
       <div key={room.id} style={{display: 'flex', alignItems: 'center', marginBottom: '0.5em'}}>
         <Link to={`/room/${encodeURIComponent(room.id)}`}>
@@ -36,7 +37,7 @@ class RoomList extends React.PureComponent<IProps, IRoomState> {
           </div>
         </Link>
         <div className="room-list-room">
-          <span>{room.name}</span>
+          <span>{room.id}</span>
           <div>{room.admins.length > 0 ? room.admins[0].name : null}</div>
           <span>Viewers: {room.viewers}</span>
         </div>

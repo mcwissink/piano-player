@@ -1,6 +1,7 @@
 import React from "react";
 import MidiController from "./piano/MidiController"
 import PianoGraphics from './piano/Graphics';
+import RoomSettings from '../components/RoomSettings';
 import { IAppContext, withContext } from '../App';
 import instruments from '../instruments.json';
 
@@ -34,7 +35,7 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
       midiFile: '',
       midiFileDump: '',
     };
-    this.midi = new MidiController(this.props.socket, this.props.color, this.state.instrument);
+    this.midi = new MidiController(this.props.socket, this.props.user.color, this.state.instrument);
   }
 
   componentDidMount() {
@@ -42,10 +43,10 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
   }
 
   componentDidUpdate() {
-    this.midi.setNoteColor(this.props.color);
+    this.midi.setNoteColor(this.props.user.color);
     this.midi.setActive(this.props.room.activePiano);
     if (this.graphics !== undefined) {
-      this.graphics.setTheme(this.props.theme);
+      this.graphics.setTheme(this.props.room.theme);
     }
   }
 
@@ -60,8 +61,10 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
     this.canvas = canvas;
     window.addEventListener('resize', this.resizeCanvas, false);
     this.resizeCanvas();
-    this.graphics = new PianoGraphics(canvas, ctx, this.props.theme);
+    this.graphics = new PianoGraphics(canvas, ctx, this.props.room.theme);
     this.update();
+    // Not sure why this is necessary but it makes the canvas draw properly
+    this.resizeCanvas();
   }
 
   update = () => {
@@ -132,8 +135,6 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
     if (this.canvas !== undefined) {
       const container = document.getElementById('canvas-container');
       if (container !== null) {
-        /* this.canvas.width = this.canvas.offsetWidth;
-         * this.canvas.height = this.canvas.offsetHeight; */
         const { width, height } = container.getBoundingClientRect();
         this.canvas.width = width;
         this.canvas.height = height;
@@ -156,8 +157,8 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
       room,
     } = this.props;
     return (
-      <div style={{ width: '100%', height: '100%' }}>
-        <div id='canvas-container' style={{ width: '100%', height: '80%' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <div id='canvas-container' style={{ height: '80%'}}>
           <canvas ref={this.setup} />
         </div>
         <div>
@@ -167,9 +168,12 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
               <a href={midiFile} download>download</a>
             </button>
           ) : null}
+          <div>
+            <button onClick={this.handleRecordDump}>download last 10 min.</button>
+          </div>
         </div>
-        <button onClick={this.handleRecordDump}>download last 10 min.</button>
         {room.permissions.admin ? (
+          <>
           <div>
             <select value={device} onChange={this.handleDeviceSelect}>
               <option value=""></option>
@@ -179,6 +183,8 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
               {instruments.map(instrument => <option key={instrument} value={instrument}>{instrument}</option>)}
             </select>
           </div>
+          {/* <RoomSettings roomName={room.id} /> */}
+          </>
         ) : null}
       </div>
     )
