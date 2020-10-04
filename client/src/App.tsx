@@ -186,6 +186,7 @@ class AppModifier {
         permissions: { $set: data.permissions },
         id: { $set: data.id },
         players: { $set: data.players },
+        chat: { $set: [] },
         scope: { $set: data.scope }
       }
     }));
