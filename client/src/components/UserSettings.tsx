@@ -14,7 +14,7 @@ class Settings extends React.PureComponent<IProps> {
     } = this.props;
     return (
       <div>
-        <input type="text" placeholder={'Username'} value={user.name} onChange={modifier.onNameChange} />
+        <input type="text" placeholder={'username'} value={user.name} onChange={modifier.onNameChange} />
         <input type="color" value={user.color} onChange={modifier.onColorChange} />
       </div>
     )

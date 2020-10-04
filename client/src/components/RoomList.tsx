@@ -54,7 +54,7 @@ class RoomList extends React.PureComponent<IProps, IRoomState> {
       <div>
         <h2>rooms</h2>
         {noRooms ? (
-          <p>It seems no one is playing</p>
+          <span>empty</span>
         ) : rooms.sort((a, b) => b.viewers - a.viewers).map(r => this.renderRoomItem(r))}
       </div>
     )

@@ -78,16 +78,16 @@ class Home extends React.PureComponent<IProps, IHomeState> {
     } = this.state;
     return (
       <div>
-        <h2>User</h2>
+        <h2>user</h2>
         <UserSettings />
         <form onSubmit={this.onPublicRoomCreate}>
-          <h2>Public Room</h2>
-          <input placeholder="Name" type="text" value={name} onChange={this.onNameChange} />
-          <input type="submit" value="Create" disabled={!this.canSubmit()} />
+          <h2>public room</h2>
+          <input placeholder="name" type="text" value={name} onChange={this.onNameChange} />
+          <input type="submit" value="create" disabled={!this.canSubmit()} />
         </form>
         <form onSubmit={this.onPrivateRoomCreate}>
-          <h2>Private Room</h2>
-          <input type="submit" value="Create" />
+          <h2>private room</h2>
+          <input type="submit" value="create" />
         </form>
       </div>
     )
