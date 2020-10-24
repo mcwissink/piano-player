@@ -1,6 +1,5 @@
 import React from "react";
 import MidiController from "./piano/MidiController"
-import PianoGraphics from './piano/Graphics';
 import RoomSettings from '../components/RoomSettings';
 import { IAppContext, withContext } from '../App';
 import instruments from '../instruments.json';
@@ -20,10 +19,10 @@ interface IPianoState {
 
 type IProps = IPianoProps & IAppContext
 class Piano extends React.PureComponent<IProps, IPianoState> {
-  canvas?: HTMLCanvasElement;
   midi: MidiController;
   frameId: number;
-  graphics?: PianoGraphics;
+  whiteKeyMapping = [0, 2, 3, 5, 7, 8, 10];
+  blackKeyMapping = [1, -1, 4, 6, -1, 9, 11];
   constructor(props: IProps) {
     super(props);
     this.frameId = -1;
@@ -35,7 +34,13 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
       midiFile: '',
       midiFileDump: '',
     };
-    this.midi = new MidiController(this.props.socket, this.props.user.color, this.state.instrument);
+    this.midi = new MidiController(
+      this.props.socket,
+      this.props.user.color,
+      () => {
+        this.forceUpdate();
+      }
+    );
   }
 
   componentDidMount() {
@@ -45,38 +50,9 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
   componentDidUpdate() {
     this.midi.setNoteColor(this.props.user.color);
     this.midi.setActive(this.props.room.activePiano);
-    if (this.graphics !== undefined) {
-      this.graphics.setTheme(this.props.room.theme);
-    }
-  }
-
-  setup = (canvas: HTMLCanvasElement | null) => {
-    if (canvas === null) {
-      return;
-    }
-    const ctx = canvas.getContext("2d");
-    if (ctx === null) {
-      return;
-    }
-    this.canvas = canvas;
-    window.addEventListener('resize', this.resizeCanvas, false);
-    this.resizeCanvas();
-    this.graphics = new PianoGraphics(canvas, ctx, this.props.room.theme);
-    this.update();
-    // Not sure why this is necessary but it makes the canvas draw properly
-    this.resizeCanvas();
-  }
-
-  update = () => {
-    if (this.graphics === undefined) {
-      return;
-    }
-    this.graphics.draw(this.midi.activeNotes);
-    this.frameId = window.requestAnimationFrame(this.update);
   }
 
   componentWillUnmount() {
-    window.cancelAnimationFrame(this.frameId);
     this.midi.disconnect();
   }
 
@@ -130,19 +106,48 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
     document.body.removeChild(link);
   }
 
-  resizeCanvas = () => {
-    // Make it visually fill the positioned parent
-    if (this.canvas !== undefined) {
-      const container = document.getElementById('canvas-container');
-      if (container !== null) {
-        const { width, height } = container.getBoundingClientRect();
-        this.canvas.width = width;
-        this.canvas.height = height;
-        if (this.graphics !== undefined) {
-          this.graphics.resize();
+  drawPiano = () => {
+    const whiteKeys = [];
+    const blackKeys = [];
+    for (let i = 0; i < 88; i++) {
+      const key = this.midi.activeNotes[i + 21];
+      const whiteIndex = this.whiteKeyMapping.indexOf(i % 12);
+      if (whiteIndex !== -1) {
+        const color = key === undefined ? 'white' : key.color;
+        whiteKeys.push(
+          <rect
+            key={i}
+            x={((Math.floor(i / 12) * 7) + whiteIndex)}
+            y={0}
+            width={1}
+            height={10}
+            style={{
+              strokeWidth: 0.1,
+              stroke: 'black'
+            }}
+            fill={color} />
+        );
+      } else {
+        const blackIndex = this.blackKeyMapping.indexOf(i % 12);
+        if (blackIndex !== -1) {
+          const color = key === undefined ? 'black' : key.color;
+          blackKeys.push(
+            <rect
+              key={i}
+              x={((Math.floor(i / 12) * 7) + blackIndex) + 0.6}
+              y={0}
+              width={0.8}
+              height={6}
+              style={{
+                strokeWidth: 0.05,
+                stroke: 'black'
+              }}
+              fill={color} />
+          );
         }
       }
     }
+    return whiteKeys.concat(blackKeys);
   }
 
   render() {
@@ -158,9 +163,9 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
     } = this.props;
     return (
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <div id='canvas-container' style={{ height: '80%'}}>
-          <canvas ref={this.setup} />
-        </div>
+        <svg viewBox="0 0 52 20" style={{ flex: 1 }}>
+          {this.drawPiano()}
+        </svg>
         <div>
           <button onClick={this.handleRecord}>{recording ? 'done' : 'record'}</button>
           {midiFile ? (

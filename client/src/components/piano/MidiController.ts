@@ -35,16 +35,18 @@ export default class MidiController {
   input: WebMidi.Input | null;
   activeNotes: ActiveNotes;
   sustainedNotes: SustainedNotes;
-  noteColor: string;
   sustain: boolean;
   active: boolean = true;
   bpm: number;
   ppq: number;
-  constructor(public socket: SafeSocket, noteColor: string, instrument: string) {
+  constructor(
+    public socket: SafeSocket,
+    public noteColor: string,
+    public onChange: () => void
+  ) {
     this.midi = WebMidi.default;
     this.player = new MidiPlayer();
     this.input = null;
-    this.noteColor = noteColor;
     this.sustain = false;
     this.activeNotes = {};
     this.sustainedNotes = {};
@@ -211,6 +213,7 @@ export default class MidiController {
     delete this.sustainedNotes[e.note.number];
     this.player.noteon(e);
     this.activeNotes[e.note.number] = e;
+    this.onChange();
     this.eventHistory.push({
       pitch: e.note.number,
       velocity: e.note.velocity,
@@ -253,6 +256,7 @@ export default class MidiController {
       this.previousEventTick = e.note.timeStamp;
       this.player.noteoff(e);
       delete this.activeNotes[e.note.number];
+      this.onChange();
     }
   }
   

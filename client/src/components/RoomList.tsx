@@ -39,7 +39,7 @@ class RoomList extends React.PureComponent<IProps, IRoomState> {
         <div className="room-list-room">
           <span>{room.id}</span>
           <div>{room.admins.length > 0 ? room.admins[0].name : null}</div>
-          <span>Viewers: {room.viewers}</span>
+          <span>{room.viewers}</span>
         </div>
       </div>
     )

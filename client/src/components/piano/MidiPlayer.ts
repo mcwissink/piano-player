@@ -5,8 +5,14 @@ import instruments from '../../instruments.json'
 export default class MidiPlayer {
   soundfont: Soundfont.Player | null;
   activeNotes: {[note: number]: Soundfont.Player | undefined};
-  ctx: AudioContext = new AudioContext();
+  ctx: AudioContext|undefined;
   constructor() {
+    const AC = (<any>window).AudioContext
+      || (<any>window).webkitAudioContext
+      || false;
+    if (AC) {
+      this.ctx = new AC();
+    }
     this.soundfont = null;
     this.activeNotes = {};
     this.loadSoundfont('acoustic_grand_piano');

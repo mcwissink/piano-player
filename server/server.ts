@@ -20,7 +20,7 @@ class User {
   roomId: string;
   constructor(socket: socket.Socket) {
     this.socket = socket;
-    this.name = 'Anonymous';
+    this.name = 'anonymous';
     this.color = "#000000";
     this.roomId = '';
   };
@@ -189,6 +189,7 @@ class RoomManager {
       room.users.add(user.getId());
 
       user.joinRoom(room.id);
+      this.emitRoomList();
       return this.getRoomData(room, user);
     });
   }

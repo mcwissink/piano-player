@@ -86,6 +86,7 @@ class Room extends React.PureComponent<IProps, IRoomState> {
         {isMobile ? (
           <div id="room" style={{ display: 'flex', flex: 1, height: '100%', flexDirection: 'column', alignItems: 'center' }}>
             <Piano />
+            <div/>
             <Chat />
           </div>
         ) : (
