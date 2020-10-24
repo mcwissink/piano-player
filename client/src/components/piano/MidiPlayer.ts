@@ -7,8 +7,8 @@ export default class MidiPlayer {
   activeNotes: {[note: number]: Soundfont.Player | undefined};
   ctx: AudioContext|undefined;
   constructor() {
-    const AC = (<any>window).AudioContext
-      || (<any>window).webkitAudioContext
+    const AC = (window as any).AudioContext
+      || (window as any).webkitAudioContext
       || false;
     if (AC) {
       this.ctx = new AC();

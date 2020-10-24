@@ -1,6 +1,6 @@
 import React from "react";
-import MidiController from "./piano/MidiController"
-import RoomSettings from '../components/RoomSettings';
+import MidiController, { MidiNoteType } from "./piano/MidiController"
+/* import RoomSettings from '../components/RoomSettings'; */
 import { IAppContext, withContext } from '../App';
 import instruments from '../instruments.json';
 
@@ -23,6 +23,8 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
   frameId: number;
   whiteKeyMapping = [0, 2, 3, 5, 7, 8, 10];
   blackKeyMapping = [1, -1, 4, 6, -1, 9, 11];
+  blackKeyMappingNoPadding = [1, 4, 6, 9, 11];
+  keys: JSX.Element[] = [];
   constructor(props: IProps) {
     super(props);
     this.frameId = -1;
@@ -34,10 +36,12 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
       midiFile: '',
       midiFileDump: '',
     };
+    this.drawPiano();
     this.midi = new MidiController(
       this.props.socket,
       this.props.user.color,
-      () => {
+      (event, index) => {
+        this.updatePiano(event, index);
         this.forceUpdate();
       }
     );
@@ -106,14 +110,36 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
     document.body.removeChild(link);
   }
 
+  updatePiano = (event: MidiNoteType, note: number) => {
+    const relativeNote = note - 21;
+    const key = this.midi.activeNotes[note];
+    const whiteIndex = this.whiteKeyMapping.indexOf(relativeNote % 12);
+    if (whiteIndex !== -1) {
+      const whiteKeyIndex = (Math.floor(relativeNote / 12) * 7) + whiteIndex;
+      this.keys[whiteKeyIndex] = (
+          <rect
+            {...this.keys[whiteKeyIndex].props}
+            key={relativeNote}
+            fill={event === MidiNoteType.noteon ? key.color : 'white'} />
+      );
+    } else {
+      const blackIndex = this.blackKeyMappingNoPadding.indexOf(relativeNote % 12);
+      const blackKeyIndex = ((Math.floor(relativeNote / 12) * 5) + blackIndex);
+      this.keys[52 + blackKeyIndex] = (
+          <rect
+            {...this.keys[52 + blackKeyIndex].props}
+            key={relativeNote}
+            fill={event === MidiNoteType.noteon ? key.color : 'black'} />
+      );
+    }
+  }
+
   drawPiano = () => {
     const whiteKeys = [];
     const blackKeys = [];
     for (let i = 0; i < 88; i++) {
-      const key = this.midi.activeNotes[i + 21];
       const whiteIndex = this.whiteKeyMapping.indexOf(i % 12);
       if (whiteIndex !== -1) {
-        const color = key === undefined ? 'white' : key.color;
         whiteKeys.push(
           <rect
             key={i}
@@ -125,29 +151,26 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
               strokeWidth: 0.1,
               stroke: 'black'
             }}
-            fill={color} />
+            fill='white' />
         );
       } else {
         const blackIndex = this.blackKeyMapping.indexOf(i % 12);
-        if (blackIndex !== -1) {
-          const color = key === undefined ? 'black' : key.color;
-          blackKeys.push(
-            <rect
-              key={i}
-              x={((Math.floor(i / 12) * 7) + blackIndex) + 0.6}
-              y={0}
-              width={0.8}
-              height={6}
-              style={{
-                strokeWidth: 0.05,
-                stroke: 'black'
-              }}
-              fill={color} />
-          );
-        }
+        blackKeys.push(
+          <rect
+            key={i}
+            x={((Math.floor(i / 12) * 7) + blackIndex) + 0.6}
+            y={0}
+            width={0.8}
+            height={6}
+            style={{
+              strokeWidth: 0.05,
+              stroke: 'black'
+            }}
+            fill='black' />
+        );
       }
     }
-    return whiteKeys.concat(blackKeys);
+    this.keys = whiteKeys.concat(blackKeys);
   }
 
   render() {
@@ -164,7 +187,7 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
     return (
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
         <svg viewBox="0 0 52 20" style={{ flex: 1 }}>
-          {this.drawPiano()}
+          {this.keys}
         </svg>
         <div>
           <button onClick={this.handleRecord}>{recording ? 'done' : 'record'}</button>

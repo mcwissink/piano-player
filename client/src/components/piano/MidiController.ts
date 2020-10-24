@@ -13,7 +13,7 @@ export interface IActiveNote extends E.Piano.NoteOn {
 export type ActiveNotes = {[note: number]: IActiveNote}; 
 export type SustainedNotes = {[note: number]: E.Piano.NoteOff};
 
-enum MidiNoteType {
+export enum MidiNoteType {
   noteon,
   noteoff,
 }
@@ -42,7 +42,10 @@ export default class MidiController {
   constructor(
     public socket: SafeSocket,
     public noteColor: string,
-    public onChange: () => void
+    public onChange: (
+      event: MidiNoteType,
+      note: number
+    ) => void
   ) {
     this.midi = WebMidi.default;
     this.player = new MidiPlayer();
@@ -55,6 +58,7 @@ export default class MidiController {
     this.socket.on<E.Piano.ControlChange>('controlchange', this.controlchangeEvent);
     this.socket.on('noteon', this.noteonEvent);
     this.socket.on('noteoff', this.noteoffEvent);
+
   }
 
   init(deviceCallback: DeviceCallback) {
@@ -213,7 +217,7 @@ export default class MidiController {
     delete this.sustainedNotes[e.note.number];
     this.player.noteon(e);
     this.activeNotes[e.note.number] = e;
-    this.onChange();
+    this.onChange(MidiNoteType.noteon, e.note.number);
     this.eventHistory.push({
       pitch: e.note.number,
       velocity: e.note.velocity,
@@ -256,7 +260,7 @@ export default class MidiController {
       this.previousEventTick = e.note.timeStamp;
       this.player.noteoff(e);
       delete this.activeNotes[e.note.number];
-      this.onChange();
+      this.onChange(MidiNoteType.noteoff, e.note.number);
     }
   }
   

@@ -5,7 +5,7 @@ import Chat from '../components/Chat';
 import Piano from "../components/Piano";
 import { IEvents as E } from '../../../server/interfaces/IEvents';
 import { IApp as A } from '../interfaces/IApp';
-import { isMobile, BrowserView } from 'react-device-detect';
+import { isMobile } from 'react-device-detect';
 
 interface IRoomProps {
   id: string;
@@ -44,7 +44,6 @@ class Room extends React.PureComponent<IProps, IRoomState> {
         id,
         user,
       }, (room: A.Room|null) => {
-        debugger
         this.props.modifier.roomUpdate(room);
       });
     }
@@ -75,7 +74,6 @@ class Room extends React.PureComponent<IProps, IRoomState> {
 
   render() {
     const {
-      room,
       modifier,
     } = this.props;
     if (modifier.noRoom()){
