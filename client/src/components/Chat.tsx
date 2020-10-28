@@ -3,6 +3,7 @@ import { IAppContext, withContext, SafeSocket } from '../App';
 import Button from './Button';
 import { IEvents as E } from '../../../server/interfaces/IEvents';
 import { IApp as A } from '../interfaces/IApp';
+import { isMobile } from 'react-device-detect';
 
 interface IChatProps {
 
@@ -93,7 +94,7 @@ class Chat extends React.PureComponent<IProps, IChatState> {
       message,
     } = this.state;
     return (
-      <div id="chat-container">
+      <div id="chat-container" style={{ height: isMobile ? '50%' : '100%' }}>
         <div style={{ flex: 1, overflow: 'hidden', width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
           {room.chat.map((c, i) => this.renderChatMessage(c, i))}
         </div>

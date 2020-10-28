@@ -3,6 +3,7 @@ import MidiController, { MidiNoteType } from "./piano/MidiController"
 /* import RoomSettings from '../components/RoomSettings'; */
 import { IAppContext, withContext } from '../App';
 import instruments from '../instruments.json';
+import { BrowserView } from 'react-device-detect';
 
 interface IPianoProps {
 
@@ -24,7 +25,7 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
   whiteKeyMapping = [0, 2, 3, 5, 7, 8, 10];
   blackKeyMapping = [1, -1, 4, 6, -1, 9, 11];
   blackKeyMappingNoPadding = [1, 4, 6, 9, 11];
-  keys: JSX.Element[] = [];
+  keyboard: JSX.Element[] = [];
   constructor(props: IProps) {
     super(props);
     this.frameId = -1;
@@ -116,18 +117,18 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
     const whiteIndex = this.whiteKeyMapping.indexOf(relativeNote % 12);
     if (whiteIndex !== -1) {
       const whiteKeyIndex = (Math.floor(relativeNote / 12) * 7) + whiteIndex;
-      this.keys[whiteKeyIndex] = (
+      this.keyboard[whiteKeyIndex] = (
           <rect
-            {...this.keys[whiteKeyIndex].props}
+            {...this.keyboard[whiteKeyIndex].props}
             key={relativeNote}
             fill={event === MidiNoteType.noteon ? key.color : 'white'} />
       );
     } else {
       const blackIndex = this.blackKeyMappingNoPadding.indexOf(relativeNote % 12);
       const blackKeyIndex = ((Math.floor(relativeNote / 12) * 5) + blackIndex);
-      this.keys[52 + blackKeyIndex] = (
+      this.keyboard[52 + blackKeyIndex] = (
           <rect
-            {...this.keys[52 + blackKeyIndex].props}
+            {...this.keyboard[52 + blackKeyIndex].props}
             key={relativeNote}
             fill={event === MidiNoteType.noteon ? key.color : 'black'} />
       );
@@ -170,7 +171,7 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
         );
       }
     }
-    this.keys = whiteKeys.concat(blackKeys);
+    this.keyboard = whiteKeys.concat(blackKeys);
   }
 
   render() {
@@ -186,10 +187,10 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
     } = this.props;
     return (
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <svg viewBox="0 0 52 20" style={{ flex: 1 }}>
-          {this.keys}
+        <svg viewBox="0 -42 52 52">
+          {this.keyboard}
         </svg>
-        <div>
+        <BrowserView>
           <button onClick={this.handleRecord}>{recording ? 'done' : 'record'}</button>
           {midiFile ? (
             <button>
@@ -199,7 +200,7 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
           <div>
             <button onClick={this.handleRecordDump}>download last 10 min.</button>
           </div>
-        </div>
+        </BrowserView>
         {room.permissions.admin ? (
           <>
           <div>

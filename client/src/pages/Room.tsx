@@ -82,13 +82,13 @@ class Room extends React.PureComponent<IProps, IRoomState> {
     return (
       <div style={{ flex: 1 }}>
         {isMobile ? (
-          <div id="room" style={{ display: 'flex', flex: 1, height: '100%', flexDirection: 'column', alignItems: 'center' }}>
+          <div id="room" style={{ display: 'flex', height: '100%', flexDirection: 'column' }}>
             <Piano />
             <div/>
             <Chat />
           </div>
         ) : (
-          <div id="room" style={{ display: 'flex', flex: 1, height: '100%', justifyContent: 'space-between' }}>
+          <div id="room" style={{ display: 'flex', height: '100%', justifyContent: 'space-between' }}>
             <Piano />
             <Chat />
           </div>
