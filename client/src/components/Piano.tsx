@@ -182,7 +182,9 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
           </g>
         );
       } else {
-        this.pianoRollActive[relativeNote].endElement();
+        if (this.pianoRollActive[relativeNote]) {
+          this.pianoRollActive[relativeNote].endElement();
+        }
       }
       this.keyboard[whiteKeyIndex] = (
           <rect
@@ -238,7 +240,9 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
           </g>
         );
       } else {
-        this.pianoRollActive[relativeNote].endElement();
+        if (this.pianoRollActive[relativeNote]) {
+          this.pianoRollActive[relativeNote].endElement();
+        }
       }
       this.keyboard[52 + blackKeyIndex] = (
           <rect
