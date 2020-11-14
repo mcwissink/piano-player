@@ -26,8 +26,6 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
   blackKeyMapping = [1, -1, 4, 6, -1, 9, 11];
   blackKeyMappingNoPadding = [1, 4, 6, 9, 11];
   keyboard: JSX.Element[] = [];
-  pianoRoll: Array<JSX.Element[]> = [];
-  pianoRollActive: any[] = [];
   constructor(props: IProps) {
     super(props);
     this.frameId = -1;
@@ -40,9 +38,6 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
       midiFileDump: '',
     };
     this.drawPiano();
-    for (let i = 0; i < 88; i++) {
-      this.pianoRoll[i] = [];
-    }
     this.midi = new MidiController(
       this.props.socket,
       this.props.user.color,
@@ -116,76 +111,13 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
     document.body.removeChild(link);
   }
 
-  heightAnimation = (relativeNote: number) => (e: any) => {
-    if (e) {
-      this.pianoRollActive[relativeNote] = e;
-      e.beginElement();
-    }
-  }
-
-  positionAnimation = (relativeNote: number) => (e: any) => {
-    if (e) {
-      e.addEventListener('endEvent', () => {
-        this.pianoRoll[relativeNote].shift();
-      });
-    }
-  };
-
   updatePiano = (event: MidiNoteType, note: number) => {
     const relativeNote = note - 21;
     const key = this.midi.activeNotes[note];
     const whiteIndex = this.whiteKeyMapping.indexOf(relativeNote % 12);
     if (whiteIndex !== -1) {
       const whiteKeyIndex = (Math.floor(relativeNote / 12) * 7) + whiteIndex;
-      let color = 'white'
-      if (event === MidiNoteType.noteon) {
-        color = key.color;
-
-        const notes = this.pianoRoll[relativeNote];
-        let subId = 0;
-        if (notes.length > 0) {
-          const previousNote = String(notes[notes.length - 1].key);
-          if (previousNote) {
-            subId = Number(previousNote.split('-')[1]) + 1;
-          }
-        }
-        this.pianoRoll[relativeNote].push(
-          <g key={`${relativeNote}-${subId}`} transform='scale(1,-1)'>
-            <rect
-              {...this.keyboard[whiteKeyIndex].props}
-              y='0'
-              width='1'
-              height='1'
-              fill={color}
-            >
-              <animate
-                id={`n${relativeNote}s${subId}`}
-                ref={this.heightAnimation(relativeNote)}
-                attributeName='height'
-                from='0'
-                to='43'
-                dur='5s'
-                fill='freeze'
-                begin='indefinite'
-              />
-              <animate
-                id={`n${note}-2`}
-                ref={this.positionAnimation(relativeNote)}
-                attributeName='y'
-                from='0'
-                to='43'
-                dur='5s'
-                fill='freeze'
-                begin={`n${relativeNote}s${subId}.end`}
-              />
-            </rect>
-          </g>
-        );
-      } else {
-        if (this.pianoRollActive[relativeNote]) {
-          this.pianoRollActive[relativeNote].endElement();
-        }
-      }
+      const color = event === MidiNoteType.noteon ? key.color : 'white';
       this.keyboard[whiteKeyIndex] = (
           <rect
             {...this.keyboard[whiteKeyIndex].props}
@@ -195,55 +127,7 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
     } else {
       const blackIndex = this.blackKeyMappingNoPadding.indexOf(relativeNote % 12);
       const blackKeyIndex = ((Math.floor(relativeNote / 12) * 5) + blackIndex);
-      let color = 'black'
-      if (event === MidiNoteType.noteon) {
-        color = key.color;
-
-        const notes = this.pianoRoll[relativeNote];
-        let subId = 0;
-        if (notes.length > 0) {
-          const previousNote = String(notes[notes.length - 1].key);
-          if (previousNote) {
-            subId = Number(previousNote.split('-')[1]) + 1;
-          }
-        }
-        this.pianoRoll[relativeNote].push(
-          <g key={`${relativeNote}-${subId}`} transform='scale(1,-1)'>
-            <rect
-              {...this.keyboard[52 + blackKeyIndex].props}
-              y='0'
-              width='1'
-              height='1'
-              fill={color}
-            >
-              <animate
-                id={`n${relativeNote}s${subId}`}
-                ref={this.heightAnimation(relativeNote)}
-                attributeName='height'
-                from='0'
-                to='43'
-                dur='5s'
-                fill='freeze'
-                begin='indefinite'
-              />
-              <animate
-                id={`n${note}-2`}
-                ref={this.positionAnimation(relativeNote)}
-                attributeName='y'
-                from='0'
-                to='43'
-                dur='5s'
-                fill='freeze'
-                begin={`n${relativeNote}s${subId}.end`}
-              />
-            </rect>
-          </g>
-        );
-      } else {
-        if (this.pianoRollActive[relativeNote]) {
-          this.pianoRollActive[relativeNote].endElement();
-        }
-      }
+      const color = event === MidiNoteType.noteon ? key.color : 'black';
       this.keyboard[52 + blackKeyIndex] = (
           <rect
             {...this.keyboard[52 + blackKeyIndex].props}
@@ -308,9 +192,6 @@ class Piano extends React.PureComponent<IProps, IPianoState> {
         <svg viewBox='0 -42 52 52'>
           <g>
             {this.keyboard}
-          </g>
-          <g>
-            {Array.from(this.pianoRoll.values()).flat()}
           </g>
         </svg>
         <BrowserView>
